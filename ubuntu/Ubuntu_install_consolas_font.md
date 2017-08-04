@@ -1,4 +1,4 @@
-#Ubuntu install Yahei and consolas font
+# Ubuntu install Yahei and consolas font
 
 ```
 sudo mkdir -p /usr/share/fonts/vista/ 
