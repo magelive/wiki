@@ -1,4 +1,4 @@
-#ssl证书分析
+# ssl证书分析
 SSL(Secure socket Layer 安全套接层协议)指使用公钥和私钥技术组合的安全网络通讯协议。
 SSL协议指定了一种在应用程序协议(如Http、Telenet、NMTP和FTP等)和TCP/IP协议之间提供数据安全性分层的机制，它为TCP/IP连接提供数据加密、服务器认证、消息完整性以及可选的客户机认证，主要用于提高应用程序之间数据的安全性，对传送的数据进行加密和隐藏，确保数据在传送中不被改变,即确保数据的完整性。
 
@@ -9,27 +9,27 @@ SSL 以对称密码技术和公开密码技术相结合，可以实现如下三�
 
 OpenSSL  简单地说,OpenSSL是SSL的一个实现,SSL只是一种规范.理论上来说,SSL这种规范是安全的,目前的技术水平很难破解,但SSL的实现就可能有些漏洞,如著名的"心脏出血".OpenSSL还提供了一大堆强大的工具软件,强大到90%我们都用不到.
 
-##证书标准
+## 证书标准
 X.509 - 这是一种证书标准,主要定义了证书中应该包含哪些内容.其详情可以参考RFC5280,SSL使用的就是这种证书标准.
 
-##编码格式
+## 编码格式
 同样的X.509证书,可能有不同的编码格式,目前有以下两种编码格式.
 
-###PEM 
+### PEM 
 Privacy Enhanced Mail,打开看文本格式,以"-----BEGIN..."开头, "-----END..."结尾,内容是BASE64编码.
 查看PEM格式证书的信息:openssl x509 -in certificate.pem -text -noout
 Apache和*NIX服务器偏向于使用这种编码格式.
 
-###DER 
+### DER 
 Distinguished Encoding Rules,打开看是二进制格式,不可读.
 查看DER格式证书的信息:openssl x509 -in certificate.der -inform der -text -noout
 Java和Windows服务器偏向于使用这种编码格式.
 
 
 
-##prive key
-##public key
+## prive key
+## public key
 
-##参考
+## 参考
 [SSL、TLS协议格式入门学习](http://www.tuicool.com/articles/rQjEzy3)
 [那些证书相关的玩意儿(SSL,X.509,PEM,DER,CRT,CER,KEY,CSR,P12等)](http://www.cnblogs.com/guogangj/p/4118605.html)

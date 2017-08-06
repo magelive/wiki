@@ -1,5 +1,5 @@
 inotify 它是一个内核用于通知用户空间程序文件系统变化的机制。
-##简介
+## 简介
 Inotify 是一个Linux内核特性，它监控文件系统，并且及时向专门的应用程序发出相关的事件警告，比如删除、读、写和卸载操作等。
 
 还可以跟踪活动的源头和目标等细节。在实际项目中，如果项目带有配置文件，那么怎么让配置文件的改变和项目程序同步而不需要重启程序呢？一个明显的应用是：在一个程序中，使用Inotify监视它的配置文件，如果该配置文件发生了更改（更新，修改）时，Inotify会产生修改的事件给程序，应用程序就可以实现重新加载配置文件，检测哪些参数发生了变化，并在应用程序内存的一些变量做相应的修改。当然另一种方法可以是通过cgi注册命令，并通过命令更新内存数据及更新配置文件
@@ -9,7 +9,7 @@ Inotify 是一个Linux内核特性，它监控文件系统，并且及时向专�
 
 众所周知，Linux 桌面系统与 MAC 或 Windows 相比有许多不如人意的地方，为了改善这种状况，开源社区提出用户态需要内核提供一些机制，以便用户态能够及时地得知内核或底层硬件设备发生了什么，从而能够更好地管理设备，给用户提供更好的服务，如 hotplug、udev 和 inotify 就是这种需求催生的。Hotplug 是一种内核向用户态应用通报关于热插拔设备一些事件发生的机制，桌面系统能够利用它对设备进行有效的管理，udev 动态地维护 /dev 下的设备文件，inotify 是一种文件系统的变化通知机制，如文件增加、删除等事件可以立刻让用户态得知，该机制是著名的桌面搜索引擎项目 beagle 引入的，并在 Gamin 等项目中被应用。
 
-##用户态接口
+## 用户态接口
 在用户态，inotify 通过三个系统调用和在返回的文件描述符上的文件 I/O 操作来使用，使用 inotify 的第一步是创建 inotify 实例：
 ```
 int fd = inotify_init ();
@@ -70,7 +70,7 @@ int inotify_rm_watch (int fd, __u32 mask);
 15. IN_MOVE，文件被移动，等同于(IN_MOVED_FROM | IN_MOVED_TO)
 **注：上面所说的文件也包括目录。**
 
-##内核实现原理
+## 内核实现原理
 在内核中，每一个 inotify 实例对应一个 inotify_device 结构：
 ```
 struct inotify_device {
@@ -114,7 +114,7 @@ d_list 指向所有 inotify_device 组成的列表的，i_list 指向所有被�
 #ifdef CONFIG_INOTIFY
 	struct list_head	inotify_watches; /* watches on this inode */
 	struct semaphore	inotify_sem;	/* protects the watches list */
-#endif
+# endif
 ```
 
 inotify_watches 是在被监视目标上的 watch 列表，每当用户调用 inotify_add_watch（）时，内核就为添加的 watch 创建一个 inotify_watch 结构，并把它插入到被监视目标对应的 inode 的 inotify_watches 列表。inotify_sem 用于同步对 inotify_watches 列表的访问。当文件系统发生第一部分提到的事件之一时，相应的文件系统代码将显示调用fsnotify_* 来把相应的事件报告给 inotify 系统，其中*号就是相应的事件名，目前实现包括：
@@ -123,7 +123,7 @@ fsnotify_move，文件从一个目录移动到另一个目录fsnotify_nameremove
 
 以上提到的通知函数最后都调用 inotify_inode_queue_event（inotify_unmount_inodes直接调用 inotify_dev_queue_event ），该函数首先判断对应的inode是否被监视，这通过查看 inotify_watches 列表是否为空来实现，如果发现 inode 没有被监视，什么也不做，立刻返回，反之，遍历 inotify_watches 列表，看是否当前的文件操作事件被某个 watch 监视，如果是，调用 inotify_dev_queue_event，否则，返回。函数inotify_dev_queue_event 首先判断该事件是否是上一个事件的重复，如果是就丢弃该事件并返回，否则，它判断是否 inotify 实例即 inotify_device 的事件队列是否溢出，如果溢出，产生一个溢出事件，否则产生一个当前的文件操作事件，这些事件通过kernel_event 构建，kernel_event 将创建一个 inotify_kernel_event 结构，然后把该结构插入到对应的 inotify_device 的 events 事件列表，然后唤醒等待在inotify_device 结构中的 wq 指向的等待队列。想监视文件系统事件的用户态进程在inotify 实例（即 inotify_init（） 返回的文件描述符）上调用 read 时但没有事件时就挂在等待队列 wq 上。
 
-##范例
+## 范例
 ```
 
 #include <stdio.h>
@@ -229,6 +229,6 @@ inotify_init_err:
 2. 如果只有一个add watch 一个file,那么这个file的更改产生的event事件中event->len是为0，需要额外的处理，此代码省略了具体的处理过程，以注释代替
 3. 如果监测的是文件或目录的更改，使用 echo "xxx" >> file，会产生一个event事件，而使用echo "xxx" > file 会产生两个event事件，查了相关的资料，可能是因为后者需要先清空file文件内容，造成第一次event事件，再将xxx写入file保存，造成了第二次的event事件。
 
-##参考
+## 参考
 [Linux inotify功能及实现原理](http://blog.csdn.net/myarrow/article/details/7096460)
 [ linux 监视文件系统inotify 测试](http://blog.csdn.net/hepeng597/article/details/7792565)

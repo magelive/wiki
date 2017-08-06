@@ -12,7 +12,7 @@ summary: 一篇GitBlog就是一个markdown文件，GitBlog使用解析markdown�
 
 注意: 2.2版本开始，所有markdown文件和图片统一放到`blog`文件夹中。[查看gitblog目录结构说明][1]。
 
-## 发表一篇新博客 ##
+## 发表一篇新博客 ## 
 
 在`posts`里新建文件`helloworld.md`，输入以下内容：
 ```
@@ -42,7 +42,7 @@ GitBlog是一个简单易用的Markdown博客系统，它不需要数据库，�
 *注意：markdown文件须采用utf8编码*，如果出现乱码，请修改编码为utf8。
 
 
-## 博客属性定义 ##
+## 博客属性定义 ## 
 
 GitBlog目前针对博客定义了以下属性：
 
@@ -56,7 +56,7 @@ GitBlog目前针对博客定义了以下属性：
 
 以上所有信息都是独占一行，暂不支持写在多行。
 
-## 2.1版本的新特性 ##
+## 2.1版本的新特性 ## 
 
 Gitblog的2.1版本针对博客的属性定义进行了一些优化。新增了两个可选属性
 
@@ -68,7 +68,7 @@ Gitblog的2.1版本针对博客的属性定义进行了一些优化。新增了�
 自动提取title，summary，images属性。Gitblog2.1一个重要的功能，如果用户没有定义头部属性，Gitblog会自动解析博客内容，从中提取属性。提取第一个H1作为title，提取所有图片作为images，自动识别摘要信息summary。也就是说你可以不手动定义这三个字段，Gitblog会自动根据上述规则识别，不过还是推荐手动填写。
 
 
-## markdown路径与URL对应关系 ##
+## markdown路径与URL对应关系 ## 
 
 GitBlog中`posts`中的markdown文件可以放在子文件夹中。举个例子，假如你的`helloword.md`文件目录如下：
 

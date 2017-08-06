@@ -1,5 +1,5 @@
 
-##ubuntu下opengl安装
+## ubuntu下opengl安装
 1. 使用apt安装OpenGL和开发包
 ```
 sudo apt-get install build-essential libgl1-mesa-dev freeglut3-dev
@@ -11,8 +11,8 @@ sudo apt-get install libglew-dev libsdl2-dev libsdl2-image-dev libglm-dev libfre
  此程序利用GLUT绘制一个OpenGL窗口，并显示一个加以光照的球。
  */
  /* 由于头文件glut.h中已经包含了头文件gl.h和glu.h，所以只需要include 此文件*/
- # include <GL/glut.h>
- # include <stdlib.h>
+ #include <GL/glut.h>
+ #include <stdlib.h>
 
  /* 初始化材料属性、光源属性、光照模型，打开深度缓冲区 */
  void init ( void )
@@ -64,5 +64,5 @@ gcc test_light.c -o test -lGL -lglut
 ./test
 ```
 如果成功运行并能看到一个带有光照的球，表示运行成功。
-##参考
+## 参考
 [Ubuntu 16.04 OpenGL 开发环境配置指南](http://www.jianshu.com/p/e4a90503d4a6)

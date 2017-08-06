@@ -1,5 +1,5 @@
 
-##时区设置(通过Dockerfile)
+## 时区设置(通过Dockerfile)
 ```
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -15,13 +15,13 @@ http://serverfault.com/questions/683605/docker-container-time-timezone-will-not-
 https://github.com/docker/docker/issues/12084
 http://tedwise.com/2015/05/02/setting-the-timezone-in-a-docker-image
 
-##中文支持
+## 中文支持
 新建Dockerfile：
 ```
 FROM ubuntu:trusty
 
 # Ensure UTF-8 locale
-#COPY locale /etc/default/locale
+# COPY locale /etc/default/locale
 RUN locale-gen zh_CN.UTF-8 &&\
   DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
 RUN locale-gen zh_CN.UTF-8  

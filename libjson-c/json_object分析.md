@@ -8,12 +8,12 @@ status: publish
 summary: 
 head: 
 images: 
---!>
+-->
 
 struct json_object是json-c库中基础结构，以此结构为基础，构建了json-c的基础操作等。
-##json_object
+## json_object
 
-###基础的typedef
+### 基础的typedef
 ```
 typedef int json_bool;
 typedef struct printbuf printbuf;
@@ -24,7 +24,7 @@ typedef struct json_object_iter json_object_iter;
 typedef struct json_tokener json_tokener;
 
 ```
-###struct json_object
+### struct json_object
 json_object详细结构定义在json_object_private.h中，其详细数据定义如下：
 ```
 struct json_object
@@ -50,7 +50,7 @@ struct json_object
 };
 ```
 
-####o_type
+#### o_type
 o_type表示objcet的类型，类型值如下：
 ```
 typedef enum json_type {
@@ -91,13 +91,13 @@ const char *json_type_to_name(enum json_type o_type)
 ```
 从以上代码中可以看出，如果我们需要再添加一个类型的话，至少则需要更改两处地方，一是在enum json_type中添加类型，二是在json_type_name数据中添加类型名称。
 
-####_delete
+#### _delete
 _delete为object的私有删除函数，其定义如下
 ```
 typedef void (json_object_private_delete_fn)(struct json_object *o);
 ```
 
-####_to_json_string
+#### _to_json_string
 _to_json_string函数功能则是
 ```
 typedef int (json_object_to_json_string_fn)(struct json_object *jso,
@@ -106,10 +106,10 @@ typedef int (json_object_to_json_string_fn)(struct json_object *jso,
 											int flags);
 ```
 
-####_ref_count
+#### _ref_count
 _ref_count 为object的引用计数器，每引用一些object时，object中的_ref_count都会加1，每当使用Putobject时，_ref_count则减1，当_ref_count的值为0时，object则会调用自身的free函数将其所占资源释放掉。
 
-####_pb
+#### _pb
 _pb
 ```
 struct printbuf {
@@ -124,7 +124,7 @@ int sprintbuf(struct printbuf *p, const char *msg, ...);
 void printbuf_reset(struct printbuf *p);
 void printbuf_free(struct printbuf *p);
 ```
-####data
+#### data
 data为object实际存储的值，如int，bool，double等
 ```
 union data {
@@ -138,7 +138,7 @@ union data {
 			int len;
 		} c_string;
 ```
-#####c_object
+##### c_object
 c_object为Json中的key-value对，其实现是以hash table的方式来存储
 ```
 struct lh_table {
@@ -202,7 +202,7 @@ struct lh_table {
 };
 ``` 
 
-######hash函数定义
+###### hash函数定义
 ```
 typedef void (lh_entry_free_fn) (struct lh_entry *e);
 typedef unsigned long (lh_hash_fn) (const void *k);
@@ -228,7 +228,7 @@ struct lh_entry {
 	struct lh_entry *prev;
 };
 ```
-#####c_array
+##### c_array
 c_array为果断中数据结构，其结构内容如下:
 ```
 typedef void (array_list_free_fn) (void *data);
@@ -241,7 +241,7 @@ struct array_list
   array_list_free_fn *free_fn;
 };
 ```
-######array_list 常用操作函数
+###### array_list 常用操作函数
 ```
 struct array_list* array_list_new(array_list_free_fn *free_fn);
 void array_list_free(struct array_list *arr);
@@ -253,7 +253,7 @@ int array_list_length(struct array_list *arr);
 
 ```
 
-#####c_string
+##### c_string
 json中存储字符串数据的结构
 ```c
 struct {
@@ -262,8 +262,8 @@ struct {
 } c_string;
 ```
 
-####_user_delete;
+#### _user_delete;
 ```
 typedef void (json_object_delete_fn)(struct json_object *jso, void *userdata);
 ```
-####_userdata;
+#### _userdata;
