@@ -1,4 +1,4 @@
-##data[0]介绍
+## data[0]介绍
 经常在阅读Linux下的代码时，会发现如下结构：
 ```
 struct XXXX{
@@ -39,7 +39,7 @@ p->data = (char *)malloc(LEN);
 编译器不会给char data[0]分配空间 能达到节省4或是8个字节的效果。
 采用char *data，需要进行二次分配，操作比较麻烦，很容易造成内存泄漏。而直接采用变长的数组，只需要分配一次，然后进行取值即可以。
 
-##char data[0], char *data, char data[]程序对比
+## char data[0], char *data, char data[]程序对比
 ```
 //test_data0.c
 #include <stdio.h>
@@ -91,9 +91,13 @@ bs3 address : 0x7ffc8cd040c0, i: 0x7ffc8cd040c0, data : 0x7ffc8cd040c4
 结果可以看出data[0]和data[]不占用空间，且地址紧跟在结构后面，而char *data作为指针，占用8个字节，地址不在结构之后。
 这里需要注意的是在x64（64位）的机器上sizeof(char \*)占的是8位字符宽，而x86（32位）的机器上sizeof(char \*)占4位字符宽。
 
-##参考
+## 参考
 [char data[0]用法总结](http://blog.csdn.net/maopig/article/details/7243646)
+
 [C语言变长数组data[0]【总结】](http://www.cnblogs.com/Anker/p/3744127.html)
+
 [char *data 与 char data[0]有什么区别？](http://bbs.csdn.net/topics/350153324)
+
 [GNU C中的零长度数组](http://blog.csdn.net/liuaigui/article/details/3680404)
+
 [结构体中最后一个成员为[0]长度数组的用法](http://blog.chinaunix.net/uid-26750459-id-3191136.html)
