@@ -35,6 +35,8 @@ images:
 
 ### 图形及图形图像处理方向
 - Qt
+- SDL
+- libvlc
 - Gtk
 - opencv
 - opengl
@@ -82,6 +84,22 @@ images:
 #### Linux应用基础编程方向
 基础知识： c语言基础知识
 应用层方向编程需要啃完《Unix环境高级编程》及《linux/unix系统编程手册》，网络编程方向需要啃完《unix网络编程1》及《unix网络编程2》，主要的学习方向建议是以书中的方向为目的，如进程、线程、文件、IO、及网络通讯等。
+一些常用库的使用及其源码阅读分析等。
+
+#### 常用库源码阅读及分析等
+- libev
+- json-c
+- lua 
+- openssl
+- mbedtls
+- libsodium
+- libcurl
+- zeroMQ
+- mosquitto
+- PCL
+- ROS
+- protobuf-c
+
 
 #### Linux系统方向
 此方向的主要目标则是熟悉linux运行原理，更好的理解系统框架
@@ -90,3 +108,7 @@ images:
 #### Linux网络方向
 此方向需要重点理解网络数据包的原理，因此此方向还需要理解网络原理。此方向需要啃完的书籍有《TCP/IP详解卷一：协议》、《TCP/IP详解卷一：实现》、《TCP/IP详解卷三：TCP事务协议,HTTP,NNTP和UNIX域协议》。
 
+#参考
+[常用开源库](https://blog.csdn.net/qq_21950929/article/details/78668870)
+[C++开源大全](https://blog.csdn.net/qing101hua/article/details/78614604)
+[GitHub 通告：整理了一个 C 和 C++ 开源库的清单（含示例代码）](https://blog.csdn.net/benpaobagzb/article/details/50783501)
