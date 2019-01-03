@@ -1,54 +1,29 @@
-## libevt简介
+## libev简介
 一个 C 编写的功能全面的高性能事件循环库。
 libev是一个event loop：事件驱动的库。通过向libev注册感兴趣的events，比如socket可读事件，libev会对所注册的事件的源进行管理，并在事件发生时触发相应的回调函数。
 
 通过event watcher来注册事件。libev通过分配和注册watcher对不同类型的事件进行监听。
-不同事件类型的watcher又对应不同的数据类型，watcher的定义模式是struct ev_TYPE或者ev_TYPE，
+不同事件类型的watcher又对应不同的数据类型，watcher的定义模式是`struct ev_TYPE`或者`ev_TYPE`，
 
-Libev 支持文件描述符事件的 select，poll，Linux 特有的 epoll，BSD 特有的 kqueue 以及 Solaris 特有的事件端口机制 (`ev_io`)，Linux 的 inotify 接口 (`ev_stat`)，Linux eventfd/signalfd（用于更快更干净的线程间唤醒 (`ev_async`)/信号处理 (`ev_signal`)），相对定时器 (`ev_timer`)，定制重新调度逻辑的绝对定时器 (`ev_periodic`)，同步的信号 (`ev_signal`)，进程状态变化事件 (`ev_child`)，以及处理事件循环机制自身的事件观察者 (`ev_idle`，`ev_embed`，`ev_prepare` 和 `ev_check` 观察者) 和文件观察者 (`ev_stat`)，甚至是对 fork 事件的有限支持 (`ev_fork`)。
+Libev 支持文件描述符事件的 select，poll，Linux 特有的 epoll，BSD 特有的 kqueue 以及 Solaris 特有的事件端口机制 (`ev_io`)，Linux 的 inotify 接口 (`ev_stat`)，Linux eventfd/signalfd（用于更快更干净的线程间唤醒 (`ev_async`)/信号处理 (`ev_signal`)），相对定时器 (`ev_timer`)，定制重新调度逻辑的绝对定时器 (`ev_periodic`)，同步的信号 (`ev_signal`)，进程状态变化事件 (`ev_child`)，以及处理事件循环机制自身的事件watcher (`ev_idle`，`ev_embed`，`ev_prepare` 和 `ev_check` watcher) 和文件watcher (`ev_stat`)，甚至是对 fork 事件的有限支持 (`ev_fork`)。
 
-
-### watcher
-
-- `ev_io`：支持 Linux 的select、poll、epoll；BSD 的kqueue；Solaris 的event port mechanisms
-- `ev_signal`：支持各种信号处理、同步信号处理
-- `ev_timer`：相对事件处理
-- `ev_periodic`：排程时间表
-- `ev_child`：进程状态变化事件
-- `ev_stat`：监视文件状态
-- `ev_fork`：有限的fork事件支持
-- `ev_idle`：
-- `ev_embed`：
-- `ev_prepare`：
-- `ev_check`：
-- `ev_async`:
-- `ev_cleanup`:
-- `ev_prepare` and `ev_check`
-
-`ev_init` 对一个watcher的与具体类型无关的部分进行初始化。
-`ev_io_set` 对watcher的与io类型相关的部分进行初始化，如果是TYPE类型那么相应的函数就是`ev_TYPE_set`。
-可以采用`ev_TYPE_init`函数来替代`ev_init`和`ev_TYPE_set`。`ev_io_start` 激活相应的watcher，watcher只有被激活的时候才能接收事件。`ev_io_stop`停止已经激活的watcher。
-
-
-### functions
-
-#### glob functions
+## glob functions
 这些函数可以随时调用，甚至在以任何方式初始化库之前。
 
-##### ev_time
+### ev_time
 `ev_tstamp ev_time ()`
 返回以 libev 所使用的格式的当前时间。注意 `ev_now`函数通常更快，且也常常返回你实际想知道的时间戳。
 `ev_now_update` 和 `ev_now` 的结合也很有意思。
 
 Libev 使用一个`ev_tstamp`数据类型来表示1970年以来的秒数，实际类型是 C 里面的double类型。
 
-##### ev_sleep
+### ev_sleep
 `void ev_sleep (ev_tstamp interval)`
 休眠给定的时间：当前线程将阻塞，直到它被中断或经过了给定的时间间隔（大约 - 即使不中断，它可能也会早返回一点）。
 如果 interval <= 0 就立即返回。基本上这是一个粒度比秒更高的 sleep()。
 interval 的范围是有限的 - libev 只保证最长一天 (interval <= 86400) 的休眠时间是可以工作的。
 
-##### version
+### ev_version_major和ev_version_minor
 ```
 int ev_version_major ()
 int ev_version_minor ()
@@ -62,7 +37,7 @@ assert (("libev version mismatch",
          && ev_version_minor () >= EV_VERSION_MINOR));
 ```
 
-##### supported backends
+### supported backends
 ```
 unsigned int ev_supported_backends ();
 unsigned int ev_recommand_backends ();
@@ -76,9 +51,9 @@ assert (("sorry, no epoll, no sex",
 ```
 `ev_recommended_backends`返回编译进 libev 二进制文件且建议本平台使用的所有后端的集合，意味着它将可以用于大多数的文件描述符类型。这个集合通常比 ev_supported_backends 返回的要小，例如，大多数 BSD 上的 kqueue 都不会使用，除非你明确要求（假设你知道你在做什么），否则不会自动检测。如果你没有显式地指定，这是 libev 将探测的后端集合。
 
-`ev_embeddable_backends`返回其它事件循环中可嵌入的后端的集合。这个值是平台特有的，但可以包含当前系统不可用的后端。为了找出当前系统可能支持的可嵌入后端，你需要查看 `ev_embeddable_backends () & ev_supported_backends ()`，同样的建议采用的那些。参考 `ev_embed` 观察者的描述来获得更多信息。
+`ev_embeddable_backends`返回其它事件循环中可嵌入的后端的集合。这个值是平台特有的，但可以包含当前系统不可用的后端。为了找出当前系统可能支持的可嵌入后端，你需要查看 `ev_embeddable_backends () & ev_supported_backends ()`，同样的建议采用的那些。参考 `ev_embed` watcher的描述来获得更多信息。
 
-##### ev_set_allocator
+### ev_set_allocator
 `ev_set_allocator (void (cb)(void *ptr, long size) throw ())`
 重新设置realloc函数。对于一些系统（至少包括 BSD 和 Darwin）的 realloc 函数可能不正确，libev 已经给了替代方案。
 你可以在高可用性程序中覆盖这个函数，比如，如果它无法分配内存就释放一些内存，使用一个特殊的分配器，或者甚至是休眠一会儿并重试直到有内存可用。
@@ -98,7 +73,7 @@ static void *persistent_realloc (void *ptr, size_t size)
 ev_set_allocator (persistent_realloc);
 ```
 
-##### ev_set_syserr_cb
+### ev_set_syserr_cb
 `ev_set_syserr_cb (void (*cb)(const char *msg) throw ())`
 设置系统错误的callback。默认调用`perror()`并`abort()`。
 设置在一个可重试系统调用错误（比如 `select`，`poll`，`epoll_wait` 失败）发生时调用的回调函数。消息是一个可打印的字符串，表示导致问题产生的系统调用或子系统。如果设置了这个回调，则 libev 将期待它补救这种状况，无论何时何地它返回。即 libev 通常将重试请求的操作，或者如果条件没有消失，执行 bad stuff（比如终止程序）。
@@ -118,22 +93,24 @@ fatal_error (const char *msg)
 ev_set_syserr_cb (fatal_error);
 ```
 
-##### ev_feed_signal
+### ev_feed_signal
 `ev_feed_signal(int signum)`
 这个函数可被用于 “模拟” 一个信号接收。在任何时候，任何上下文，包括信号处理器或随机线程，调用这个函数都是完全安全的。
 它的主要用途是在你的进程中定制信号处理。比如，你可以默认在所有线程中阻塞信号（当创建任何 loops 时指定 `EVFLAG_NOSIGMASK`），然后在一个线程中，使用 `sigwait` 或其它的机制来等待信号，然后通过调用 `ev_feed_signal` 将它们“传送” 给 libev。
 
-#### ev_loop
+## ev_loop
 Event loop 用一个结构体`struct ev_loop *`描述。
 Libev 支持两类 loop，一是 default loop，支持子进程事件（child process event）；而动态创建的 event loops 就不支持这个功能。
 
+### ev_default_loop和ev_loop_new
+函数原型：
 ```
 struct ev_loop *ev_default_loop (unsigned int flags);
 struct ev_loop *ev_loop_new (unsigned int flags);
 ```
-`ev_default_loop` 初始化 default loops。如果已经初始化了，那么直接返回并且忽略 flags。注意这个函数并不是线程安全的。只有这个 loop 可以处理`ev_child`事件。如果你不知道使用什么事件循环，则使用这个函数返回的那个（或通过 `EV_DEFAULT` 宏）。
+`ev_default_loop` 初始化 default loops。如果已经初始化了，那么直接返回并且忽略 `flags`。注意这个函数并不是线程安全的。只有这个 loop 可以处理`ev_child`事件。如果你不知道使用什么事件循环，则使用这个函数返回的loop或使用 `EV_DEFAULT` 宏。
 
-`ev_loop_new`这个函数是线程安全的。一般而言，每个 thread 使用一个 loop。这将创建并初始化一个新的事件循环对象。如果循环无法初始化，则返回 fa
+`ev_loop_new`这个函数是线程安全的。一般而言，每个 thread 使用一个 loop。这将创建并初始化一个新的事件循环对象。如果循环无法初始化，则返回 `false`。
 
 flags 参数可被用于指定特殊的行为或要使用的特定后端，且通常被指定为 0（或 `EVFLAG_AUTO`）。
 flags支持如下值：
@@ -150,11 +127,11 @@ flags支持如下值：
 这个标记不能被 LIBEV_FLAGS 环境变量的值覆盖或指定。
 
 - `EVFLAG_NOINOTIFY`
-在ev_stat监听中不使用 *inotify* API,这个标记被指定时，则 libev 将不会试图为它的 `ev_stat` 观察者使用 *inotify* API。
-除了调试和测试之外，这个标志对于保全 inotify 文件描述符是非常有用的，否则使用 ev_stat 观察者的每个循环消耗一个 *inotify* 句柄。
+在ev_stat监听中不使用 *inotify* API,这个标记被指定时，则 libev 将不会试图为它的 `ev_stat` watcher使用 *inotify* API。
+除了调试和测试之外，这个标志对于保全 inotify 文件描述符是非常有用的，否则使用 ev_stat watcher的每个循环消耗一个 *inotify* 句柄。
 
 - `EVFLAG_SIGNALFD`
-在ev_signal监听中使用 *signalfd* API, 当设置这个标记时，则 libev 将试图为它的 `ev_signal` (和 `ev_child`) 观察者使用 *signalfd* API。这个 API 同步地传递信号，这使它更快且可能使它能够获得入队的信号数据。只要你在对处理信号不感兴趣的线程中正确地阻塞信号，它也可以简化多线程中的信号处理。
+在ev_signal监听中使用 *signalfd* API, 当设置这个标记时，则 libev 将试图为它的 `ev_signal` (和 `ev_child`) watcher使用 *signalfd* API。这个 API 同步地传递信号，这使它更快且可能使它能够获得入队的信号数据。只要你在对处理信号不感兴趣的线程中正确地阻塞信号，它也可以简化多线程中的信号处理。
 
 - `EVFLAG_NOSIGMASK`
 使 libev 避免修改 signal mask。这样的话，你要使 signal 是非阻塞的。在未来的 libev 中，这个 mask 将会是默认值。当指定这个标记时，则 libev 将避免修改信号掩码。特别地，这意味着当你想接收信号时你不得不确保它们是未阻塞的。
@@ -175,19 +152,319 @@ flags支持如下值：
 这个后端把 `EV_READ` 映射为 `POLLIN | POLLERR | POLLHUP`，把 `EV_WRITE` 映射为 `POLLOUT | POLLERR | POLLHUP`。
 
 - `EVBACKEND_EPOLL`
+值为 4，`epoll` 后端，linux特有和。
+这是标准的`epoll(7)` 接口后端，这个后端可能比 `poll` 和 `select` 慢一点，但它的表现更好。尽管 `poll` 和 `select` 通常的表现大概为 O(total_fds)，其中 total_fds 是 fds 的总个数（或最高的 fd）， `epoll` 的表现为 O(1) 或 O(active_fds)。
+这个后端映射 `EV_READ` 与 `EV_WRITE` 的方式与 `EVBACKEND_POLL` 的相同。
+
 - `EVBACKEND_KQUEUE`
+值为8，BSD系统特有。
+这个后端把 `EV_READ` 映射成 `EVFILT_READ` 事件和 `NOTE_EOF`, 把 `EV_WRITE` 映射成 `EVFILT_WRITE` 事件和 `NOTE_EOF`.
+
 - `EVBACKEND_DEVPOLL`
+值为 16，Solaris 8特有。
+根据报告，/dev/poll 只支持 sockets，且不是可嵌入的，这将大大限制这个后端的有用性。
+
 - `EVBACKEND_PORT`
+值为 32，Solaris 10特有。
+这个后端映射 `EV_READ` 与 `EV_WRITE` 的方式与 `EVBACKEND_POLL` 的相同。
 
+- `EVBACKEND_ALL`
+尝试所有的后端。由于它是一个掩码，你可以做一些特殊的事情，比如 `EVBACKEND_ALL & ~EVBACKEND_KQUEUE`,但是不太推荐使用些设置，建议使用`ev_recommended_backends()`来获取和设置后端，或者更简单的干脆不指定后端，由ev库自己来选择使用。
 
-ev_run、ev_break以及ev_loop_default都是event loop控制函数。
-event loop定义为struct ev_loop。
-有两种类型的event loop，分别是default类型和dynamically created类型，区别是前者支持子进程事件。
-ev_default_loop和ev_loop_new函数分别用于创建default类型或者dynamically created类型的event loop。
+- `EVBACKEND_MASK`
+不是一个后端，一个用来从 `flags` 值中选择所有的后端位的掩码，在你想从标志值屏蔽任何后端的情况下（比如当修改 `LIBEV_FLAGS` 环境变量时）。
+如果标记值中有一个或多个后端标记，则只会尝试这些后端（以这里列出的相反的顺序）。
+如果没有指定，则会尝试 `ev_recommended_backends()` 中的所有后端。
 
-event_run函数告诉系统应用程序开始对事件进行处理，有事件发生时就调用watcher callbacks。
-除非调用了ev_break或者不再有active的watcher，否则会一直重复这个过程。
+### `ev_loop_destory`
+函数原型：`void ev_loop_destroy (loop);`
+销毁一个`ev_loop`事件循环对象（释放所有的内存和内核状态等等）。注意这里要将所有的 IO 清除光之后再调用，因为这个函数并不中止所有活跃（active）的 IO。部分 IO 不会被清除，比如 signal。这些需要手动清除。注意某些全局状态，比如信号状态（及安装的信号处理程序），将不会被这个函数释放，及相关的watcher（比如信号和 child watcher）将需要手动地停止。
+这个函数一般和`ev_loop_new`一同使用。当然它也可以用于`ev_default_loop`返回的默认的 loop，只是在这种情况下不是线程安全的。
+注意不建议对默认的 loop 调用这个函数，除了在极少的你真的需要释放它的资源的情况下。
 
+### `ev_loop_fork`
+函数原型：`void ev_loop_fork (struct ev_loop *loop);`
+这个函数导致`ev_run`的子过程重设已有的 backend 的 kernel state。
+重用父进程创建的 loop。可以和`pthread_atfork()`配合使用。
+需要在每一个需要在 `fork` 之后重用的 loop 中调用这个函数。
+必须在恢复之前或者调用`ev_run()`之前调用。如果是在fork之后创建的 loop，不需要调用。
+此外，如果需要重用这个loop,必须要忽略信息`SIGPIPG`。
+和`pthread_atfork()`代码结合如下：
+```
+post_fork_child (void)
+{
+  ev_loop_fork (EV_DEFAULT);
+}
+ 
+...
+pthread_atfork (0, 0, post_fork_child);
+```
+
+### `ev_is_default_loop`
+函数原型：`int ev_is_default_loop (struct ev_loop *loop);`
+判断当前 loop 是不是 default loop。
+
+### `ev_iteration`
+函数原型：`unsigned int ev_iteration (struct ev_loop * loop);`
+返回当前的 loop 的迭代数。等于 libev pool 新事件的数量（?）。这个值对应ev_prepare和ev_check调用，并在 prepare 和 check 之间增一。
+
+### `ev_depth`
+函数原型：`unsigned int ev_depth (struct ev_loop *loop);`
+返回ev_run()进入减去退出次数的差值。
+注意，导致ev_run异常退出的调用（setjmp / longjmp, pthread_cancel, 抛出异常等）均不会导致该值减一。
+
+### `ev_backend`
+函数原型：`unsigned int ev_backend (struct ev_loop *loop);`
+返回 `EVBACKEND_*` 标记中的一个，以指明使用的事件后端。
+
+### `ev_now`和`ev_noew_updata`
+函数原型：
+```
+ev_tstamp ev_now (struct ev_loop *loop);
+void ev_now_update (struct ev_loop *loop);
+```
+`ev_now`得到当前的 “事件循环时间(event loop time)”，它是事件循环接收事件并开始处理它们的时间。在 callback 调用期间，这个值是不变的。回调一被处理，这个时间戳就不会变了，它还是用于相对定时器的基时间。你可以把它当作事件发生（或更正确地说，libev 发生它）的时间。
+`ev_now_updata`更新从`ev_now()`中返回的时间。不必要的话，不要使用，因为这个函数的开销相对是比较大的。它通常在`ev_run`中会自动完成更新。
+
+### `ev_suspend`和`ev_resume`
+函数原型：
+```
+void ev_suspend (struct ev_loop *loop);
+void ev_resume (struct ev_loop *loop);
+```
+这两个函数挂起并恢复一个事件循环，当 loop 有一段事件不用，且超时不应该被处理时使用。同时其 timeout 也会暂停。如果恢复后，timer 会从上一次暂停状态继续及时——这一点对于实现一些要连同时间也一起冻结的功能时，非常有用。
+
+注意已经 resume 的loop不能再 resume，反之已经 suspend 的 loop 不能再 suspend。
+
+典型的使用场景是交互式的程序，比如游戏：当用户按下 `^Z` 挂起游戏，并在一小时后恢复，对于超时最好的处理是在程序挂起期间就像时间没有流逝一样。这可以通过在你的 `SIGTSTP` 处理程序中调用 `ev_suspend`，给你自己发送一个 `SIGSTOP` 并在之后直接调用 `ev_resume` 恢复定时器处理来实现。
+
+### `ev_run`
+函数原型：`bool ev_run (struct ev_loop *loop, int flags);`
+初始化 loop 结束后，调用这个函数开始 loop。如果 flags == 0，直至 loop 没有活跃的时间或者是调用了 `ev_break` 之后停止。
+Loop 可以是异常使能的，你可以在 callback 中调用`longjmp`来终端回调并且跳出 `ev_run`，或者通过抛出 C++ 异常。这些不会导致 `ev_depth` 值减少。
+`event_run`函数告诉系统应用程序开始对事件进行处理，有事件发生时就调用watcher callbacks。
+除非调用了`ev_break`或者不再有active的watcher，否则会一直重复这个过程。
+
+`flags`标志值为`EVRUN_NOWAIT`时，`ev_run`会检查并且执行所有未解决的 events，但如果没有就绪的时间，ev_run 会立刻返回。当其值为`EVRUN_ONCE`时会检查所有的 events，在至少每一个 event 都执行了一次事件迭代之后才返回。但有时候，使用`ev_prepare/ev_check`会更好。
+
+`ev_run`的大致工作流程：
+
+- loop depth ++
+- 重设ev_break状态
+- 在首次迭代之前，调用所有 pending watchers
+
+LOOP：
+- 如果置了`EVFLAG_FORKCHECK`，则检查 fork，如果检测到 `fork`，则排队并调用所有的 fork watchers
+- 排队并且调用所有 ready 的watchers
+- 如果`ev_break`被调用了，则直接跳转至 FINISH
+- 如果检测到了 fork，则分离并且重建 kernel state
+- 使用所有未解决的变化更新 kernel state
+- 更新`ev_now`的值
+- 计算要 sleep 或 block 多久
+- 如果指定了的话，sleep
+- loop iteration ++
+- 阻塞以等待事件
+- 排队所有未处理的I/O事件
+- 更新`ev_now`的值，执行 time jump 调整
+- 排队所有超时事件
+- 排队所有定期事件
+- 排队所有优先级高于 pending 事件的 idle watchers
+- 排队所有 check watchers
+- 按照上述顺序的逆序，调用 watchers (check watchers -> idle watchers -> 定期事件 -> 计时器超时事件 -> fd事件)。信号和 child watchers 视为 fd watchers。
+- 如果`ev_break`被调用了，或者使用了`EVRUN_ONCE`或者`EVRUN_NOWAIT`，则如果没有活跃的 watchers，则 FINISH，否则 continue
+
+FINISH：
+- 如果是`EVBREAK_ONE`，则重设 `ev_break` 状态
+- loop depth --
+- return
+
+### `ev_break`
+函数原型：`void ev_break (struct ev_loop *loop, int how);`
+中断 loop。参数可以是 `EVBREAK_ONE`（执行完一个内部调用后返回）或`EVBREAK_ALL`（执行完所有）。
+可被用于执行一个调用使`ev_run` 提前返回（但是只有在其处理完了所有outstanding 事件之后）。其中的 `how` 参数必须是 `EVBREAK_ONE`，它使最内层的 `ev_run` 返回，或者是 `EVBREAK_ALL`，它使所有嵌套的 `ev_run` 返回。
+这个 "break 状态" 将在下次调用 `ev_run` 时被清除。
+在任何 `ev_run` 调用之外调用 `ev_break` 也是安全的，只是在那种情况下不起作用。
+
+### `ev_ref`和`ev_unref`
+函数原型：
+```
+void ev_ref (struct ev_loop *loop);
+void ev_unref (struct ev_loop *loop);
+```
+Ref/unref 可以被用于添加或移除一个事件循环的引用计数。
+每个watcher持有一个引用计数，只要引用计数不为零，ev_run 就不会返回。
+在做 start 之后要 unref；stop 之前要 ref。
+
+### `ev_set_io_collect_interval`和`ev_set_timeout_collect_interval`
+函数原型：
+```
+void ev_set_io_collect_interval (struct ev_loop *loop, ev_tstamp interval);
+void ev_set_timeout_collect_interval (struct ev_loop *loop, ev_tstamp interval);
+```
+两个值均默认为0，表示尽量以最小的延迟调用io和定时器callback。
+但这是理想的情况，实际上，比如 select 这样低效的系统调用，由于可以一次性读取很多，所以可以适当地进行延时。
+通过使用比较高的延迟，但是增加每次处理的数据量，以提高 CPU 效率。
+
+### `ev_pending_count`、`ev_invoke_pending`和`ev_set_invoke_pending_cb`
+函数原型：
+```
+int ev_pending_count (struct ev_loop *loop);
+void ev_invoke_pending (struct ev_loop *loop);
+void ev_set_invoke_pending_cb (struct ev_loop *loop, void (*invoke_pending_cb(EV_P)));
+````
+`ev_pending_count` 返回当前有多少个 pending 的 watchers。
+`ev_invoke_pending` 调用所有的 pending 的 watchers。这个除了可以在 callback 中调用（少见）之外，更多的是在重载的函数中使用。通常，`ev_run`会在需要时自动执行此操作，但当覆盖invoke回调时，此调用非常方便。可以从watcher中调用此函数，例如，当您想进行一些长时间的计算并想将进一步的事件处理传递给另一个线程时（必须确保在`ev_invoke_pending`或`ev_run`中只执行一个线程）。
+`ev_set_invoke_pending_cb`将覆盖loop中的调用挂起功能：在调用所有pending watchers时，`ev_run`将改用此回调函数来回调处理。例如，当您想在另一个上下文（另一个线程等）中调用实际的watchers时，这是很有用的。
+如果要重置回调，使用`ev_invoke_pending`作为新callback。
+
+### `ev_set_loop_release_cb`
+函数原型：
+```
+void ev_set_loop_release_cb (struct ev_loop *loop,
+                             void (*release)(EV_P)throw(),
+                             void (*acquire)(EV_P)throw());
+```
+
+这是一个 lock 操作，你可以自定义 lock。其中 release 是 unlock，acquire 是 lock。release 是在 loop 挂起以等待events 之前调用，并且在开始回调之前调用 acquire。
+
+### `ev_set_userdata`和`ev_userdata`
+函数原型：
+```
+void ev_set_userdata (struct ev_loop *loop, void *data);
+void *ev_userdata (struct ev_loop *loop);
+```
+设置/读取 loop 中的用户 data。
+
+### `ev_verify`
+函数原型：`void ev_verify (struct ev_loop *loop);`
+验证当前 loop 的设置。如果发现问题，则打印 error msg 并 abort()。
+
+## watcher
+
+### watcher类型
+- `ev_io`：支持 Linux 的select、poll、epoll；BSD 的kqueue；Solaris 的event port mechanisms
+- `ev_signal`：支持各种信号处理、同步信号处理
+- `ev_timer`：相对事件处理
+- `ev_periodic`：排程时间表
+- `ev_child`：进程状态变化事件
+- `ev_stat`：监视文件状态
+- `ev_fork`：有限的fork事件支持
+- `ev_idle`：
+- `ev_embed`：
+- `ev_prepare`：
+- `ev_check`：
+- `ev_async`:
+- `ev_cleanup`:
+- `ev_prepare` 
+- `ev_check`
+
+每一个watcher类型有一个附属的watcher结构体（一般是`struct ev_TYPE`或`ev_TYPE`）。
+
+每一个watcher必须通过调用`ev_init (watcher *, callback)`来初始化，这个调用需要传入一个回调。每次在事件发生时，这个回调会被调到（或者在 I/O watcher的情况中，每次事件循环探测到给定的文件描述符可读和/或可写的时候）。
+
+每一个watcher都有对应的`ev_TYPE_set`函数、`ev_TYPE_start`函数、`ev_TYPE_stop`函数。在`ev_run` 之前进行各个 watcher 的 `ev_start`。
+可以采用`ev_TYPE_init`函数来替代`ev_init`和`ev_TYPE_set`。`ev_TYPE_start`激活相应的watcher，watcher只有被激活的时候才能接收事件。`ev_TYPE_stop`停止已经激活的watcher。
+
+每一个watcher都还有它自己的 `ev_TYPE_set (watcher *, ...)`函数 ，参数列表依赖于watcher类型。还有一个调用中结合了初始化和设置：`ev_TYPE_init (watcher *, callback, ...)`。
+
+只要 watcher 是 active，就不能再调用 init。
+每个 callback 都有三个参数：loop, watcher, 事件的掩码值。可能的掩码值有：
+- `EV_READ` 
+`ev_io` watcher中的文件描述符已经变得可读。
+
+- `EV_WRITE` 
+`ev_io` watcher中的文件描述符已经变得可写。
+
+- `EV_TIMER`
+`ev_timer` watcher已经超时。
+
+- `EV_PERIODIC`
+`ev_periodic` watcher已经超时。
+
+- `EV_SIGNAL`
+`ev_signal` watcher中指定的信号已经由一个线程接收到。
+
+- `EV_CHILD`
+`ev_child` watcher中指定的 pid 已经接收到一个状态改变。
+
+- `EV_STAT`
+`ev_stat` watcher中指定的路径以某种方式改变了其属性。
+
+- `EV_IDLE`
+`ev_idle` watcher没有其它更好的事情要做。
+
+- `EV_PREPARE/EV_CHECK`
+所有的 `ev_prepare` watcher仅在 `ev_run` 开始收集新事件 *之前* 调用，而所有的 `ev_check` watcher仅在 `ev_run` 已经收集到了它们之后，但在任何接收到的事件的回调入队之前，被加入队列（而不是调用）。
+这意味着 `ev_prepare` watcher是在事件循环休眠或为新事件而 poll 之前最后被调用的watcher，而 `ev_check` watcher将在一个事件循环迭代内任何其它相同或更低优先级的watcher之前被调用。
+这两种watcher类型的回调可以启动或停止任何数量它们想要的watcher，所有这些都将被考虑在内（比如，`ev_prepare` watcher可能启动一个 idle watcher来保持`ev_run`不被阻塞）。
+
+- `EV_EMBED`：
+ev_embed watcher 中指定的嵌入式事件循环需要注意。
+
+- `EV_FORK`
+子线程中 fork 之后事件循环已经恢复（参考 ev_fork）。
+
+- `EV_CLEANUP`：
+事件循环将被销毁（参考 ev_cleanup）。
+- 
+- `EV_ASYNC`：
+给定的 async watcher已经被异步地通知了（参考 ev_async）。
+
+- `EV_CUSTOM`：
+不是 libev 自身发送（或另外使用）的事件，但可以被 libev 的用户自由地用来通知watcher（比如，通过 ev_feed_event）。
+
+- `EV_ERROR`：
+发生未指定的错误，watcher已被停止。这可能发生在由于 libev 内存不足而watcher无法正常启动，发现一个文件描述符已经关闭，或其它问题。Libev 认为这些是应用程序的错误。在 libev 内存不够用时可能产生；fd 被外部关闭时也可能产生。
+
+### watcher 函数
+
+### callback
+`void (*)(struct ev_loop *loop, ev_TYPE *watcher, int revents);`
+
+#### ev_init
+`void ev_init (ev_TYPE *watcher, callback);`
+初始化watcher的通用部分。watcher对象的内容可以是任意的，只有watcher的通用部分被初始化，在之后需要调用类型特有的 `ev_TYPE_set` 来初始化类型特有的部分。对于每一个类型，还有一个 `ev_TYPE_init` 可以把这两个调用合为一个。
+你可以在任何时间重新初始化一个watcher，只要它已经停止（或从未启动），且没有挂起事件。
+
+#### ev_TYPE_set
+`void ev_TYPE_set (ev_TYPE *watcher, [args]);`
+设置指定类型的 wetaher。init 函数必须在此之前被调用一次，此后可以设置任意次的 set 函数。不能对一个 active 的 watcher 调用此函数。
+
+#### ev_TYPE_init
+`void ev_TYPE_init(ev_TYPE *watch, callback, [args]);`
+这个宏将 init 和 set 糅合在一起使用，相当于`ev_init`和`ev_TYPE_set`两条指令。
+
+#### ev_TYPE_start
+`void ev_TYPE_start (loop, ev_TYPE *watcher);`
+启动（激活）给定的watcher。只有活跃的watcher可以接收事件。如果 watcher 已经是 active，则调用无效。。
+
+#### ev_TYPE_stop
+`void ev_TYPE_stop (loop, ev_TYPE *watcher);`
+停止 watcher，并清空 pending 状态。如果要释放一个 Watcher，最好都显式地调用 stop。
+
+#### ev_is_active 
+`bool ev_is_active (ev_TYPE *watcher);`
+判断watcher是不是active状态，如果 watcher 被执行了一次 start，并且未被 stop，则返回 true。
+
+#### ev_is_pending
+`bool ev_is_pending (ev_TYPE *watcher);`
+当且仅当 watcher pending 时返回 true。（如：有未决的事件，但是 callback 未被调用）
+
+####  ev_cb和ev_set_cb
+```
+callback ev_cb (ev_TYPE *watcher);
+void ev_set_cb (ev_TYPE *watcher, callback);
+```
+返回或设置当前watcher callback。
+
+#### ev_priority和ev_set_priority
+```
+int ev_priority (ev_TYPE *watcher);
+void ev_set_priority (ev_TYPE *watcher, int priority);
+```
+Priority 是一个介于`EV_MAXPRI`（默认2）和`EV_MIN_PRI`（默认-2）之间的值。数值越高越优先被调用。但除了 `ev_idle`，每一个 watcher 都会被调用。当 watcher 是 active 或 pending 时并不能修改。实际上 priority 大于-2到2的范围也是没问题的。
+
+#### 
 
 ## example
 
@@ -231,6 +508,7 @@ main (void)
 [Libev 官方文档学习笔记 - 02：watcher 基础](https://segmentfault.com/a/1190000006200077)
 [Libev 官方文档学习笔记 - 03：常用 watcher 接口](https://segmentfault.com/a/1190000006679929)
 [使用 libev 构建 TCP 响应服务器（echo server）的简单流程](https://segmentfault.com/a/1190000006691243)
-
+[Libev库学习（详细）](https://blog.csdn.net/guankeliang/article/details/82911856)
+[c10K problem](http://www.kegel.com/c10k.html)
 
 libev source ev.3
