@@ -341,22 +341,144 @@ void *ev_userdata (struct ev_loop *loop);
 
 ## watcher
 
-### watcher类型
-- `ev_io`：支持 Linux 的select、poll、epoll；BSD 的kqueue；Solaris 的event port mechanisms
-- `ev_signal`：支持各种信号处理、同步信号处理
-- `ev_timer`：相对事件处理
-- `ev_periodic`：排程时间表
-- `ev_child`：进程状态变化事件
-- `ev_stat`：监视文件状态
-- `ev_fork`：有限的fork事件支持
-- `ev_idle`：
-- `ev_embed`：
-- `ev_prepare`：
-- `ev_check`：
-- `ev_async`:
-- `ev_cleanup`:
-- `ev_prepare` 
-- `ev_check`
+### watcher状态
+
+#### initialised
+在watcher被register到loop之前，它处于 initialised 状态。
+可以通过调用 `ev_TYPE_init` 或 `ev_init` 和watcher特有的 `ev_TYPE_set` 函数来完成。
+处于这种状态下，它仅仅是一些适合事件循环使用的内存块。它可以根据需要被移动、释放、复用等，只要你保持内存内容不变，或者再次调用 `ev_TYPE_init`。
+
+#### started/running/active
+调用`ev_TYPE_start`之后的状态，并且开始等待事件。在这个状态下，除了特别提及的少数情况之外，它不能存取、移动、释放，只能维持着对它的指针。
+一旦watcher已经通过调用 `ev_TYPE_start` 启动了，则它就变成了loop的属性，并活跃地等待事件。
+在这种状态下它不能被访问、移动、释放或其它操作，仅有的合法的事情是持有一个指向它的指针，并调用一些允许在活跃的watcher上调用的 libev 函数。
+
+#### pending
+当 watcher 是 active 并且一个让 watcher 感兴趣的事件到来，那么 watcher 进入 pending。
+这个状态的 watcher 可以 access，但不能存取、移动、释放。
+
+#### stopped
+watcher可被 libev 隐式地停止（在这种情况中它可能依然处于挂起状态），或通过调用它的 `ev_TYPE_stop` 函数显式地停止。无论它是否处于活跃状态, `ev_TYPE_stop`将清除watcher中任何可能处于的挂起状态。因此在释放一个watcher时，常常需要显式地停止它。
+停止的（不是挂起）watcher本质上是处于初始化状态的，可以以任何式来复用、移动和修改（当free了内存块时，需要重新 `ev_TYPE_init`）。
+调用`ev_TYPE_stop`后的状态，此时状态与 initialized 相同。
+
+### watcher 优先级模型
+
+许多event loop都支持watcher的优先级，这些优先级通常以很小整数来表示，以整数的规律来影响watcher之间事件回调调用的顺序。
+
+event loop中处理优先级的方式有两种：
+- lock-out model
+在此模型中，优先级较高watcher的“lock out”调用优先级较低的watcher，这意味着只要优先级较高的watche接收到事件，就不会调用优先级较低的watcher。
+- only-for-ordering model
+仅使用优先级在单个event loop中对回调调用进行排序：优先级较高的watcher在优先级较低的watcher之前被调用，但在对新事件进行轮询之前都被调用。
+
+libev中除了idle watcher使用的是lock-out模式下，其它的所有watcher使用的都是only-for-ordering模式。
+这是因为大多数内核接口不支持为watche实现lock-out model，并且大多数事件库只要它们的回调没有被执行就会一次又一次地对相同的事件进行轮询，在高优先级watcher锁定大量低优先级watcher的常见情况下，这是非常低效的。
+
+在libev中，可以使用`ev_set_priority`设置watcher优先级。
+
+静态（排序）优先级在两个或多个watcher处理同一资源时最有用：一个典型的使用场景是让`ev_io` watcher来接收数据，以及另一个`ev_timer` watcher来处理超时。在加载状态下，当程序处理其他作业时，也可以接收数据，但是在检查数据前，由于timer watcher会首先调用，因此会优先调用超时处理程序，导致数据无法处理。在这种情况下，给timer watcher一个低的优先级，给io watcher一个高的优先级，那么就可以确保优先处理IO watcher中的数据。
+
+由于idle watcher使用的是lock-out model，这意味着idle watcher将仅在没有相同或更高优先级的watcher收到事件时执行。
+例如，要模拟有多少其他事件库处理优先级，可以将`ev_idle` watcher与其它watcher关联，在正常watcher的callback中只需启动idle watcher。真正的处理是在idle watcher中的callback中完成。这会导致libev不断地轮询和处理kernel中关于watcher的事件和数据，在lock-out case很少的情况下，这样是可行的。但是，一般情况下，以这种方式来实现的lock-out model在其设计处理的负载类型下会表现得很糟糕。在这种情况下，在启动idle watcher之前最好停止实际的wathcer，这样内核就不必处理watcher事件，以防实际处理被延迟相当长的时间。
+
+如下例子：一个I/O watcher stdin的例子，它以默认优先级更低的级别来运行，只在没有其他事件时处理数据：
+```
+ev_idle idle; // actual processing watcher
+ev_io io;     // actual event watcher
+ 
+static void
+io_cb (EV_P_ ev_io *w, int revents)
+{
+  // stop the I/O watcher, we received the event, but
+  // are not yet ready to handle it.
+  ev_io_stop (EV_A_ w);
+ 
+  // start the idle watcher to handle the actual event.
+  // it will not be executed as long as other watchers
+  // with the default priority are receiving events.
+  ev_idle_start (EV_A_ &idle);
+}
+ 
+static void
+idle_cb (EV_P_ ev_idle *w, int revents)
+{
+  // actual processing
+  read (STDIN_FILENO, ...);
+ 
+  // have to start the I/O watcher again, as
+  // we have handled the event
+  ev_io_start (EV_P_ &io);
+}
+ 
+// initialisation
+ev_idle_init (&idle, idle_cb);
+ev_io_init (&io, io_cb, STDIN_FILENO, EV_READ);
+ev_io_start (EV_DEFAULT_ &io);
+```
+
+
+### watcher 通用函数
+
+#### callback
+`void (*)(struct ev_loop *loop, ev_TYPE *watcher, int revents);`
+
+#### ev_init
+`void ev_init (ev_TYPE *watcher, callback);`
+初始化watcher的通用部分。watcher对象的内容可以是任意的，只有watcher的通用部分被初始化，在之后需要调用类型特有的 `ev_TYPE_set` 来初始化类型特有的部分。对于每一个类型，还有一个 `ev_TYPE_init` 可以把这两个调用合为一个。
+你可以在任何时间重新初始化一个watcher，只要它已经停止（或从未启动），且没有挂起事件。
+
+#### ev_TYPE_set
+`void ev_TYPE_set (ev_TYPE *watcher, [args]);`
+设置指定类型的 wetaher。init 函数必须在此之前被调用一次，此后可以设置任意次的 set 函数。不能对一个 active 的 watcher 调用此函数。
+
+#### ev_TYPE_init
+`void ev_TYPE_init(ev_TYPE *watch, callback, [args]);`
+这个宏将 init 和 set 糅合在一起使用，相当于`ev_init`和`ev_TYPE_set`两条指令。
+
+#### ev_TYPE_start
+`void ev_TYPE_start (loop, ev_TYPE *watcher);`
+启动（激活）给定的watcher。只有活跃的watcher可以接收事件。如果 watcher 已经是 active，则调用无效。。
+
+#### ev_TYPE_stop
+`void ev_TYPE_stop (loop, ev_TYPE *watcher);`
+停止 watcher，并清空 pending 状态。如果要释放一个 Watcher，最好都显式地调用 stop。
+
+#### ev_is_active 
+`bool ev_is_active (ev_TYPE *watcher);`
+判断watcher是不是active状态，如果 watcher 被执行了一次 start，并且未被 stop，则返回 true。
+
+#### ev_is_pending
+`bool ev_is_pending (ev_TYPE *watcher);`
+当且仅当 watcher pending 时返回 true。（如：有未决的事件，但是 callback 未被调用）
+
+####  ev_cb和ev_set_cb
+```
+callback ev_cb (ev_TYPE *watcher);
+void ev_set_cb (ev_TYPE *watcher, callback);
+```
+返回或设置当前watcher callback。
+
+#### ev_priority和ev_set_priority
+```
+int ev_priority (ev_TYPE *watcher);
+void ev_set_priority (ev_TYPE *watcher, int priority);
+```
+Priority 是一个介于`EV_MAXPRI`（默认2）和`EV_MIN_PRI`（默认-2）之间的值。数值越高越优先被调用。但除了 `ev_idle`，每一个 watcher 都会被调用。当 watcher 是 active 或 pending 时并不能修改。实际上 priority 大于-2到2的范围也是没问题的。
+
+#### ev_invoke
+`void ev_invoke (struct ev_loop *loop, ev_TYPE *watcher, int revents);`
+在指定的loop中以指定的revents参数唤醒wather来运行其设定的callback。不管loop和watcher是否是valid状态。
+
+#### ev_clear_pending
+`int ev_clear_pending (struct ev_loop *loop, ev_TYPE *watcher);`
+清除watcher的pending状态，并返回revents状态。如果watcher不是pending状态，则返回0。
+
+#### ev_feed_event
+`void ev_feed_event (struct ev_loop *loop, ev_TYPE *watcher, int revents)`
+给指定的loop中的watcher设置revents事件，相当于模拟发生特定的revents事件。
+
+### watcher 类型
 
 每一个watcher类型有一个附属的watcher结构体（一般是`struct ev_TYPE`或`ev_TYPE`）。
 
@@ -416,60 +538,24 @@ ev_embed watcher 中指定的嵌入式事件循环需要注意。
 - `EV_ERROR`：
 发生未指定的错误，watcher已被停止。这可能发生在由于 libev 内存不足而watcher无法正常启动，发现一个文件描述符已经关闭，或其它问题。Libev 认为这些是应用程序的错误。在 libev 内存不够用时可能产生；fd 被外部关闭时也可能产生。
 
-### watcher 函数
 
-### callback
-`void (*)(struct ev_loop *loop, ev_TYPE *watcher, int revents);`
+#### ev_io
+ev_io用来监听io事件，当有标准输入或输出时，则会触发事件，执行回调函数。
+支持 Linux 的select、poll、epoll；BSD 的kqueue；Solaris 的event port mechanisms
+这个 watcher 负责检测文件描述符是否可写入数据或者是读出数据。fd最好设置为non-block。
+注意有时候在调用read时是没有数据的（返回0），此时一个一个非阻塞的read会得到EAGAIN错误。
 
-#### ev_init
-`void ev_init (ev_TYPE *watcher, callback);`
-初始化watcher的通用部分。watcher对象的内容可以是任意的，只有watcher的通用部分被初始化，在之后需要调用类型特有的 `ev_TYPE_set` 来初始化类型特有的部分。对于每一个类型，还有一个 `ev_TYPE_init` 可以把这两个调用合为一个。
-你可以在任何时间重新初始化一个watcher，只要它已经停止（或从未启动），且没有挂起事件。
-
-#### ev_TYPE_set
-`void ev_TYPE_set (ev_TYPE *watcher, [args]);`
-设置指定类型的 wetaher。init 函数必须在此之前被调用一次，此后可以设置任意次的 set 函数。不能对一个 active 的 watcher 调用此函数。
-
-#### ev_TYPE_init
-`void ev_TYPE_init(ev_TYPE *watch, callback, [args]);`
-这个宏将 init 和 set 糅合在一起使用，相当于`ev_init`和`ev_TYPE_set`两条指令。
-
-#### ev_TYPE_start
-`void ev_TYPE_start (loop, ev_TYPE *watcher);`
-启动（激活）给定的watcher。只有活跃的watcher可以接收事件。如果 watcher 已经是 active，则调用无效。。
-
-#### ev_TYPE_stop
-`void ev_TYPE_stop (loop, ev_TYPE *watcher);`
-停止 watcher，并清空 pending 状态。如果要释放一个 Watcher，最好都显式地调用 stop。
-
-#### ev_is_active 
-`bool ev_is_active (ev_TYPE *watcher);`
-判断watcher是不是active状态，如果 watcher 被执行了一次 start，并且未被 stop，则返回 true。
-
-#### ev_is_pending
-`bool ev_is_pending (ev_TYPE *watcher);`
-当且仅当 watcher pending 时返回 true。（如：有未决的事件，但是 callback 未被调用）
-
-####  ev_cb和ev_set_cb
+##### ev_io functions
 ```
-callback ev_cb (ev_TYPE *watcher);
-void ev_set_cb (ev_TYPE *watcher, callback);
+void ev_io_init (ev_io *io, callback, int fd, int events);
+void ev_io_set (ev_io *io, int fd, int events);
+void ev_io_start(struct ev_loop *loop, ev_io *);
+void ev_io_stop(ev_io *);
 ```
-返回或设置当前watcher callback。
+设置和启动`ev_io` watcher。
+其中 events 可以是`EV_WRITE`和`EV_READ`的组合。
 
-#### ev_priority和ev_set_priority
-```
-int ev_priority (ev_TYPE *watcher);
-void ev_set_priority (ev_TYPE *watcher, int priority);
-```
-Priority 是一个介于`EV_MAXPRI`（默认2）和`EV_MIN_PRI`（默认-2）之间的值。数值越高越优先被调用。但除了 `ev_idle`，每一个 watcher 都会被调用。当 watcher 是 active 或 pending 时并不能修改。实际上 priority 大于-2到2的范围也是没问题的。
-
-#### 
-
-## example
-
-## ev_io
-
+##### example
 ```c
 #include <stdio.h>
 #include <ev.h>
@@ -497,6 +583,179 @@ main (void)
     ev_run (loop, 0);
     return 0;
 }
+```
+
+##### ev_io special problem
+###### 文件描述符消失的特殊问题
+部分后端(eg.kqueue, epoll)需要显示的调用close来关闭fd，原因在于当你在外部调用close来关闭fd时, 当fd小于0时，系统中相关的后端会悄悄的处理掉，而不会有相应的notify,如果此时有新的fd的值刚好跟之前watcher中的相同时，libev无法区别其是一个新的watcher还是之前的watcher,这样会导致回调的callback异常。
+因此为了避免此种情况，libev在一般情况下都不会变动文件描述符，只会每次在调用`ev_io_set`时才更新其值。同样，在需要更新文件描述符时，必须调用`ev_io_set`或是`ev_io_init`来更新它，否则仅仅只是更改ev_io中的值是无效的。
+这种情况一般出现在没有调用`ev_io_stop`就把fd关闭导致的。
+
+###### 使用dup操作fd的特殊问题
+部分后端（eg.epoll)无法为文件描述符注册事件,只能注册为基础的文件描述符（underlying file descriptions），这意味着使用`dup()`或其他奇怪操作的fd，只能由其中一个被接收到。
+
+###### 关于文件的特殊问题
+`ev_io`对于文件来说并没有什么用，只要文件存在，就可立即访问，并不需要事件来通知和等待。对于stdin和stdout，请谨慎使用，确保这两者没有被重定向至文件。
+
+###### 关于 fork 的特殊问题
+部分后端（eg.epoll,kqueue)根据不支持`fork()`,libev中使用`ev_loop_fork()`来完全支持`fork()`,并且使用EVFLAG_FORKCHECK。不过对于epoll和kqueue之外的无需担心。。
+
+###### SIGPIPE的特殊问题
+只是提醒一下：记得处理SIGPIPE事件。
+
+###### 关于accept一个无法接受的连接
+大多数 POSIX accpet 实现中在删除因为错误而导致的连接时（如 fd 到达上限）都回产生一个错误的操作，比如使 accept 失败但不拒绝连接，只产生ENFILE错误。但这个会导致 libev 还是将其标记为 ready 状态。
+推荐方法是列出所有的错误并记录下来，或者是暂时关闭 watchers。
+
+#### ev_timer
+一个相对超时机制的定时器。所谓的“相对”，就是说这个定时器的参数是：指定以当前时间为基准，延迟多久出发事件。
+这个定时器与基于万年历的日期/时间是无关的，只基于系统单调时间。
+
+##### ev_timer functions
+```
+ev_timer_init (struct ev_timer *, callback, ev_tstamp at, ev_tstamp repeat);
+ev_timer_set(struct ev_timer *, ev_tstamp at, ev_tstamp repeat);
+ev_timer_start (struct ev_loop *, ev_timer *);
+ev_timer_stop(struct ev_timer *);
+void ev_timer_again(struct ev_loop *loop, ev_timer *w);
+ev_tstamp ev_timer_remaining (loop, ev_timer *);
+```
+如果repeat为正，这个timer会重复触发，否则只触发一次。
+`ev_timer_again`表示重新启动定时器，相当于调用`ev_timer_stop`同时并更新repeat，并重新使用`ev_timer_start`来启动 timer watcher。
+`ev_timer_remaining` 获取定时器剩下的时间。
+
+##### ev_timer 使用策略
+
+- 使用标准的初始化和停止 API 来重设
+```
+//ev_init(timer, callback);
+//ev_timer_set (timer, 60.0, 0.0);
+ev_timer_init (timer, callback, 60.0, 6.0);
+ev_timer_start (loop, timer)
+```
+- 使用ev_timer_again重设
+使用ev_timer_again，可以忽略ev_timer_start
+```
+ev_init (timer, callback);
+timer->repeat = 60.0;
+ev_timer_again (loop, start);
+```
+初始化完全后，可在callback中改变 timeout 值，不管 timer 是否 active:
+```
+timer->repeat = 60.0;
+ev_timer_again (loop, timer);
+```
+
+- 让 timer 超时，但视情况重新配置
+这个方式的基本思路是因为许多 timeout 时间都比 interval 大很多，此时要记住上一次活跃的时间，然后再 callback 中检查真正的 timeout
+
+```
+ev_tstamp g_timeout = 60.0;
+ev_tstamp g_last_activity;
+ev_timer  g_timer;
+
+static void callback (EV_P_ev_timer *w, int revents)
+{
+    ev_tstamp after = g_last_activity - ev_now(EV_A) + g_timeout;
+    
+    // 如果小于零，表示时间已经发生了，已超时
+    if (after < 0.0) {
+        ......    // 执行 timeout 操作
+    }
+    else {
+        // callback 被调用了，但是却有一些最近的活跃操作，说明未超时
+        // 此时就按照需要设置的新超时事件来处理
+        ev_timer_set (w, after, 0.0);
+        ev_timer_start (loop, g_timer);
+    }
+}
+
+```
+启用这种模式，记得初始化时将`g_last_activity`设置为`ev_now`，并且调用一次`callback (loop, &g_timer, 0)`；当活跃时间到来时，只需修改全局的 timeout 变量即可，然后再调用一次 callback
+```
+g_timeout = new_value
+ev_timer_stop (loop, &timer)
+callback (loop, &g_timer, 0)
+```
+- 为 timer 使用双向链表
+使用场景：有成千上万个请求，并且都需要 timeout。当 timeout 开始前，计算 timeout 的值，并且将 timeout 放在链表末尾。然后当链表前面的项需要触发时。使用`ev_timer`来将其触发掉。当有 activity 时，重算timeout,并将 timer 从 list中移至list 末尾，确保如果ev_timer已经被重新更新。
+通过这种方式，可以在O（1）时间内管理无限数量的timer的启动、停止和更新，代价是出现严重的复杂情况，并且必须使用持续的超时来确保列表保持排序状态。
+
+##### ev_timer special problem 
+
+###### timeout太早的问题
+假设在50.9秒的时候请求延时1秒，那么当51秒到来时，可能导致 timeout，这就是“太早”问题。Libev的策略是对于这种情况，在52秒时才执行 timeout。但是这又有“太晚”的问题，请程序员注意.
+
+###### time更新的问题
+libev只在`ev_run`收集新事件之前和之后更新其当前的时间，这导致在一次迭代中处理大量事件时，`ev_now`和`ev_time()`之间的差异不断增大。
+如果怀疑事件处理被延迟，并且需要根据当前时间确定超时时间，请使用如下方法进行调整：
+`ev_timer_set (&timer, after + (ev_time () - ev_now ()), 0.);`
+
+###### 非同步时钟的特殊问题
+Libev使用的时一个内部的单调时钟(Wall clock or monotonic clock)而不是系统时钟，而`ev_timer()`则是基于系统时钟的，所以在做比较的时候两者不同步。
+
+###### 假死(suspended animation)问题
+Suspenged animation，也称为休眠，指的是将机子置于休眠状态。
+注意不同的机子不同的系统这个行为可能不一样。其中有一种休眠后会使得所有程序感觉只是经过了很小的一段时间一般（时间跳跃）。推荐在SIGTSTP处理中调用ev_suspend和ev_resume，但不能对SIGSTOP做任何事情。
+
+##### example
+- 创建一个60s后启动的timer
+
+```
+static void
+one_minute_cb (struct ev_loop *loop, ev_timer *w, int revents)
+{
+  .. one minute over, w is actually stopped right here
+}
+ 
+ev_timer mytimer;
+ev_timer_init (&mytimer, one_minute_cb, 60., 0.);
+ev_timer_start (loop, &mytimer);
+```
+- 创建一个timer，在10秒不活动后超时。
+
+```
+static void
+timeout_cb (struct ev_loop *loop, ev_timer *w, int revents)
+{
+  .. ten seconds without any activity
+}
+ 
+ev_timer mytimer;
+ev_timer_init (&mytimer, timeout_cb, 0., 10.); /* note, only repeat used */
+ev_timer_again (&mytimer); /* start timer */
+ev_run (loop, 0);
+ 
+// and in some piece of code that gets executed on any "activity":
+// reset the timeout to start ticking again at 10 seconds
+ev_timer_again (&mytimer);
+```
+
+
+
+#### ev_signal 
+`ev_signal`：支持各种信号处理、同步信号处理
+- `ev_timer`：相对事件处理
+- `ev_periodic`：排程时间表
+- `ev_child`：进程状态变化事件
+- `ev_stat`：监视文件状态
+- `ev_fork`：有限的fork事件支持
+- `ev_idle`：
+- `ev_embed`：
+- `ev_prepare`：
+- `ev_check`：
+- `ev_async`:
+- `ev_cleanup`:
+- `ev_prepare` 
+- `ev_check`
+
+
+
+## example
+
+## ev_io
+
+
 
 ```
 
