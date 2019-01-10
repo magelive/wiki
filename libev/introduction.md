@@ -58,7 +58,7 @@ assert (("sorry, no epoll, no sex",
 重新设置realloc函数。对于一些系统（至少包括 BSD 和 Darwin）的 realloc 函数可能不正确，libev 已经给了替代方案。
 你可以在高可用性程序中覆盖这个函数，比如，如果它无法分配内存就释放一些内存，使用一个特殊的分配器，或者甚至是休眠一会儿并重试直到有内存可用。
 例如：用一个等待一会儿并重试的分配器替换 libev 分配器（例子需要一个与标准兼容的`realloc`）。
-```
+```c
 static void *persistent_realloc (void *ptr, size_t size)
 {
   while (1) {
@@ -79,7 +79,7 @@ ev_set_allocator (persistent_realloc);
 设置在一个可重试系统调用错误（比如 `select`，`poll`，`epoll_wait` 失败）发生时调用的回调函数。消息是一个可打印的字符串，表示导致问题产生的系统调用或子系统。如果设置了这个回调，则 libev 将期待它补救这种状况，无论何时何地它返回。即 libev 通常将重试请求的操作，或者如果条件没有消失，执行 bad stuff（比如终止程序）。
 
 例如：我们可以使用此函数将error信息输出到指定文件中，并终止程序
-```
+```c
 static void
 fatal_error (const char *msg)
 {
@@ -190,7 +190,7 @@ flags支持如下值：
 必须在恢复之前或者调用`ev_run()`之前调用。如果是在fork之后创建的 loop，不需要调用。
 此外，如果需要重用这个loop,必须要忽略信息`SIGPIPG`。
 和`pthread_atfork()`代码结合如下：
-```
+```c
 post_fork_child (void)
 {
   ev_loop_fork (EV_DEFAULT);
@@ -311,7 +311,7 @@ void ev_set_timeout_collect_interval (struct ev_loop *loop, ev_tstamp interval);
 int ev_pending_count (struct ev_loop *loop);
 void ev_invoke_pending (struct ev_loop *loop);
 void ev_set_invoke_pending_cb (struct ev_loop *loop, void (*invoke_pending_cb(EV_P)));
-````
+```
 `ev_pending_count` 返回当前有多少个 pending 的 watchers。
 `ev_invoke_pending` 调用所有的 pending 的 watchers。这个除了可以在 callback 中调用（少见）之外，更多的是在重载的函数中使用。通常，`ev_run`会在需要时自动执行此操作，但当覆盖invoke回调时，此调用非常方便。可以从watcher中调用此函数，例如，当您想进行一些长时间的计算并想将进一步的事件处理传递给另一个线程时（必须确保在`ev_invoke_pending`或`ev_run`中只执行一个线程）。
 `ev_set_invoke_pending_cb`将覆盖loop中的调用挂起功能：在调用所有pending watchers时，`ev_run`将改用此回调函数来回调处理。例如，当您想在另一个上下文（另一个线程等）中调用实际的watchers时，这是很有用的。
@@ -383,7 +383,7 @@ libev中除了idle watcher使用的是lock-out模式下，其它的所有watcher
 例如，要模拟有多少其他事件库处理优先级，可以将`ev_idle` watcher与其它watcher关联，在正常watcher的callback中只需启动idle watcher。真正的处理是在idle watcher中的callback中完成。这会导致libev不断地轮询和处理kernel中关于watcher的事件和数据，在lock-out case很少的情况下，这样是可行的。但是，一般情况下，以这种方式来实现的lock-out model在其设计处理的负载类型下会表现得很糟糕。在这种情况下，在启动idle watcher之前最好停止实际的wathcer，这样内核就不必处理watcher事件，以防实际处理被延迟相当长的时间。
 
 如下例子：一个I/O watcher stdin的例子，它以默认优先级更低的级别来运行，只在没有其他事件时处理数据：
-```
+```c
 ev_idle idle; // actual processing watcher
 ev_io io;     // actual event watcher
  
@@ -550,7 +550,7 @@ ev_io用来监听io事件，当有标准输入或输出时，则会触发事件�
 void ev_io_init (ev_io *io, callback, int fd, int events);
 void ev_io_set (ev_io *io, int fd, int events);
 void ev_io_start(struct ev_loop *loop, ev_io *);
-void ev_io_stop(ev_io *);
+void ev_io_stop(struct ev_loop *loop, ev_io *);
 ```
 设置和启动`ev_io` watcher。
 其中 events 可以是`EV_WRITE`和`EV_READ`的组合。
@@ -616,7 +616,7 @@ main (void)
 ev_timer_init (struct ev_timer *, callback, ev_tstamp at, ev_tstamp repeat);
 ev_timer_set(struct ev_timer *, ev_tstamp at, ev_tstamp repeat);
 ev_timer_start (struct ev_loop *, ev_timer *);
-ev_timer_stop(struct ev_timer *);
+ev_timer_stop(struct ev_loop *loop, struct ev_timer *);
 void ev_timer_again(struct ev_loop *loop, ev_timer *w);
 ev_tstamp ev_timer_remaining (loop, ev_timer *);
 ```
@@ -645,15 +645,12 @@ ev_timer_again (loop, start);
 timer->repeat = 60.0;
 ev_timer_again (loop, timer);
 ```
-
 - 让 timer 超时，但视情况重新配置
-这个方式的基本思路是因为许多 timeout 时间都比 interval 大很多，此时要记住上一次活跃的时间，然后再 callback 中检查真正的 timeout
-
-```
+这个方式的基本思路是因为许多 timeout 时间都比 interval 大很多，此时要记住上一次活跃的时间，然后再 callback 中检查真正的 timeout. 
+```c
 ev_tstamp g_timeout = 60.0;
 ev_tstamp g_last_activity;
 ev_timer  g_timer;
-
 static void callback (EV_P_ev_timer *w, int revents)
 {
     ev_tstamp after = g_last_activity - ev_now(EV_A) + g_timeout;
@@ -669,7 +666,6 @@ static void callback (EV_P_ev_timer *w, int revents)
         ev_timer_start (loop, g_timer);
     }
 }
-
 ```
 启用这种模式，记得初始化时将`g_last_activity`设置为`ev_now`，并且调用一次`callback (loop, &g_timer, 0)`；当活跃时间到来时，只需修改全局的 timeout 变量即可，然后再调用一次 callback
 ```
@@ -699,46 +695,287 @@ Suspenged animation，也称为休眠，指的是将机子置于休眠状态。
 注意不同的机子不同的系统这个行为可能不一样。其中有一种休眠后会使得所有程序感觉只是经过了很小的一段时间一般（时间跳跃）。推荐在SIGTSTP处理中调用ev_suspend和ev_resume，但不能对SIGSTOP做任何事情。
 
 ##### example
-- 创建一个60s后启动的timer
-
-```
+- 创建一个60s后启动的timer 
+```c
 static void
 one_minute_cb (struct ev_loop *loop, ev_timer *w, int revents)
 {
   .. one minute over, w is actually stopped right here
 }
- 
 ev_timer mytimer;
 ev_timer_init (&mytimer, one_minute_cb, 60., 0.);
 ev_timer_start (loop, &mytimer);
 ```
 - 创建一个timer，在10秒不活动后超时。
-
-```
+```c
 static void
 timeout_cb (struct ev_loop *loop, ev_timer *w, int revents)
 {
   .. ten seconds without any activity
 }
- 
 ev_timer mytimer;
 ev_timer_init (&mytimer, timeout_cb, 0., 10.); /* note, only repeat used */
 ev_timer_again (&mytimer); /* start timer */
 ev_run (loop, 0);
- 
 // and in some piece of code that gets executed on any "activity":
 // reset the timeout to start ticking again at 10 seconds
 ev_timer_again (&mytimer);
 ```
 
+#### ev_periodic
+基于日历的绝对定时器，periodic watcher不是基于实时（或相对时间，即经过的物理时间）而是基于日历时间（绝对时间，即您可以在日历或时钟上读取的时间）。periodic watcher可以设置在某个特定的时间点后触发，如果你periodic watcher “在10秒内”触发（通过指定`ev_now（）+10`，即绝对时间而不是延迟），然后将系统时钟重置为上一年的时间，那么触发事件将需要一年的时间（不像`ev_timer`，它在启动后仍然会触发大约10秒，因为它使用相对超时）。
+
+##### ev_periodic functions
+```
+ev_tstamp (*reschedule_cb)(ev_periodic *w, ev_tstamp now);
+void ev_periodic_init (ev_periodic *, callback, ev_tstamp offset, ev_tstamp interval, reschedule_cb);
+void ev_periodic_set (ev_periodic *, ev_tstamp offset, ev_tstamp interval, reschedule_cb);
+void ev_periodic_start(struct ev_loop *, ev_periodic *);
+void ev_periodic_stop(struct ev_loop *, ev_periodic *);
+void ev_periodic_again (loop, ev_periodic *);
+ev_tstamp ev_periodic_at (ev_periodic *);
+```
+`ev_periodic_again`关闭并重启 periodic watcher
+`reschedule_cb`重新安排当前callback,如何不使用的话，可将其值设为0。随时可更改，但更改仅在定期计时器触发或再次调用`ev_periodic_again`时生效。
+
+##### ev_periodic 使用场景
+- 绝对计时器：offset 等于绝对时间，interval 为0，reschedule_cb 为 NULL。在这种设置下，时钟只执行一次，不重复。
+- 重复内部时钟：offset 小于等于 interval 值，interval 大于0，reschedule_cb 为 NULL。这种设置下，watcher 永远在每一个（offset + N * interval）超时。
+- 手动排程模式：offset 忽略，reschedule_cb 设置。使用 callback 来返回下次的 trigger 时间。
 
 
+##### example
+- 每小时精确的调用（每当系统时间被3600整除时）callback
+```c
+static void
+clock_cb (struct ev_loop *loop, ev_periodic *w, int revents)
+{
+  ... its now a full hour (UTC, or TAI or whatever your clock follows)
+}
+ev_periodic hourly_tick;
+ev_periodic_init (&hourly_tick, clock_cb, 0., 3600., 0);
+ev_periodic_start (loop, &hourly_tick);
+/*or*/
+#include <math.h>
+static ev_tstamp
+my_scheduler_cb (ev_periodic *w, ev_tstamp now)
+{
+  return now + (3600. - fmod (now, 3600.));
+}
+ ev_periodic_init (&hourly_tick, clock_cb, 0., 0., my_scheduler_cb);
+```
+- 从现在开始每小时调用一次callback
+```c
+ev_periodic hourly_tick;
+ev_periodic_init (&hourly_tick, clock_cb,
+                  fmod (ev_now (loop), 3600.), 3600., 0);
+ev_periodic_start (loop, &hourly_tick);
+```
 #### ev_signal 
-`ev_signal`：支持各种信号处理、同步信号处理
-- `ev_timer`：相对事件处理
-- `ev_periodic`：排程时间表
-- `ev_child`：进程状态变化事件
-- `ev_stat`：监视文件状态
+捕获 signal 事件,支持各种信号处理、同步信号处理.可以在同一个 loop 可以多次监测同一个 signal，但是无法在多个 loop 中监测同一个 signal。此外，`SIGCHILD`只能在 default loop 中监测。
+如果可以的话，libev将在启用`SA_RESTART`（或等效）行为的情况下启动其处理程序，因此系统调用不应过度中断。如果系统调用被信号中断时出现问题，您可以在`ev_check` watcher中block所有信号，并在`ev_prepare` watcher中unblock。
+
+##### ev_signal 特殊问题
+- 关于继承 fork / execve / ptherad_create 的问题
+在子进程调用 exec 之前，应当将 `signal mask` 重设为你所需的默认值。最简单的方法就是子进程做一个`pthread_atfork()`来重设。
+- 关于线程信号处理的特殊问题
+POSIX 的不少功能（如`sigwait`）只有在进程中的所有线程屏蔽了 signal 时才真正生效
+为了解决这个问题，如果真的要使用这些功能的话，建议在创建线程之前屏蔽所有的 signal，并且在创建 loops 的时候指定`EVFLAG_NOSIGMASK`，然后制定一个 thread 用来接收 signals。
+
+　Ev_child 的优先级固定是EV_MAXPRI。 ev_signal functions
+```
+void _ev_signal_init (ev_signal *, callback, int signum);
+void ev_signal_set (ev_signal *, int signum);
+void ev_signal_start(struct ev_loop *loop, ev_sigal *);
+void ev_signal_stop(struct ev_loop *loop, ev_sigal *);
+```
+##### ev_signal example
+在收到SIG_INT时，直接退出
+```c
+static void
+sigint_cb (struct ev_loop *loop, ev_signal *w, int revents)
+{
+  ev_break (loop, EVBREAK_ALL);
+}
+ 
+ev_signal signal_watcher;
+ev_signal_init (&signal_watcher, sigint_cb, SIGINT);
+ev_signal_start (loop, &signal_watcher);
+```
+
+#### ev_child
+子进程状态事件watcher, 当收到`SIGCHILD`事件时，child watcher 触发(大部分情况下是子进程退出或被杀掉）。
+只有default loop才能处理信号，因此只能在default ev_loop中ev_child watcher。
+ev_child 的优先级固定是`EV_MAXPRI`。
+
+目前，即使child进程停止运行，child watcher也不会停止，需要在回调中停止child watcher。
+
+
+
+##### ev_child functions
+```
+typedef struct ev_child
+{
+	EV_WATCHER_LIST (ev_child)
+	int flags;   /* private */
+	int pid;     /* ro */
+	int rpid;    /* rw, holds the received pid */
+	int rstatus; /* rw, holds the exit status, use the macros from sys/wait.h */
+} ev_child;
+void ev_chile_init (ev_child *, callback, int pid, int trace);
+void ev_child_set (ev_child *, int pid, int trace);
+void ev_child_start(struct ev_loop *, ev_child *);
+void ev_child_stop(struct ev_loop *, ev_child *);
+```
+操作watcher等待进程pid的状态更改（pid 如果指定0的话，表示任意子进程)。callback函数可以根据`struct ev_child`结构中的`rstatus`来查看进程的状态(具体的状态值定义可以查看sys/wait.h中的宏或查看`waitpid`文档）， `rpid`表示检测到状态变化的 pid。
+
+##### ev_child example
+启动一个ev_child watcher捕捉子进程退出的事件并进行相关处理。
+```c
+ev_child cw;
+ 
+static void
+child_cb (EV_P_ ev_child *w, int revents)
+{
+  ev_child_stop (EV_A_ w);
+  printf ("process %d exited with status %x\n", w->rpid, w->rstatus);
+}
+ 
+pid_t pid = fork ();
+ 
+if (pid < 0)
+  // error
+else if (pid == 0)
+  {
+    // the forked child executes here
+    exit (1);
+  }
+else
+  {
+    ev_child_init (&cw, child_cb, pid, 0);
+    ev_child_start (EV_DEFAULT_ &cw);
+  }
+```
+
+#### ev_stat
+监控文件属性变化, 所监控的文件路径不一定存在，因为文件“存在”和"不存在"也属于其监测的一种属性。监控文件路径必须为绝对路径，并且不能以`/`结尾，且不能是特殊文件夹`.`和`..`。
+
+##### ev_stat special problem 
+- 大文件支持问题
+libev是根据系统中的`struct stat`结构来获取文件的属性的，因此，对于大多数系统来说，如果它只支持使用32位的`stat`，那么libev也没办法支持大文件的，如果系统中的`struct stat`支持的话，libev也是可以支持的。
+- 不支持Kqueue的问题
+libev在监测文件变化时默认使用的是`inotify (7)`,因此对于kqueue后端可能来说不是太友好。
+- 关于文件时间只能精确到秒的问题
+有些系统的文件时间仅精确到秒，这就意味着 ev_stat 无法区分秒以下的变动。
+- 关于网络文件获取属性有可能会比较慢的问题
+因为ev中使用`stat()`来获取文件的属性的，而它又是一个同步函数，所以在获取本地文件属性时，它一般会很快的返回，但如果是获取网络文件系统中的文件属性时，那么它的速度可能就会比较慢了。
+建议尽量不要使用ev_stat来获取网络文件系统中的文件属性。
+
+##### ev_stat functions
+```
+typedef struct ev_stat
+{
+  EV_WATCHER_LIST (ev_stat)
+  ev_timer timer;     /* private */
+  ev_tstamp interval; /* ro */
+  const char *path;   /* ro */
+  ev_statdata prev;   /* ro */
+  ev_statdata attr;   /* ro */
+  int wd; /* wd for inotify, fd for kqueue */
+} ev_stat;
+
+void ev_stat_init (ev_stat *, callback, const char *path, ev_tstamp interval);
+void ev_stat_set (ev_stat *, const char *path, ev_tstamp interval);
+void ev_stat_start(struct ev_loop *, ev_stat *);
+void ev_stat_stop(struct ev_loop *, ev_stat *);
+void ev_stat_stat (struct ev_loop *, ev_stat *);
+```
+`ev_stat_stat`使用新的文件 stat 值去更新 stat buffer，使用此函数来使得你做的一些配置更改不会被触发。
+`ev_statdata`和`struct stat`基本是一样的。
+`attr`表示最近的一次状态属性，`prev`表示上一次的状态属性。换句话说，只要`prev != attr`,那么callback就应该要被调用。
+
+##### ev_stat example
+- 关注/etc/passwd中的属性更改
+```c
+static void
+passwd_cb (struct ev_loop *loop, ev_stat *w, int revents)
+{
+	/* /etc/passwd changed in some way */
+	if (w->attr.st_nlink)
+	{
+		printf ("passwd current size  %ld\n", (long)w->attr.st_size);
+		printf ("passwd current atime %ld\n", (long)w->attr.st_mtime);
+		printf ("passwd current mtime %ld\n", (long)w->attr.st_mtime);
+	}
+	else
+		/* you shalt not abuse printf for puts */
+		puts ("wow, /etc/passwd is not there, expect problems. "
+				"if this is windows, they already arrived\n");
+}
+...
+ev_stat passwd;
+ev_stat_init (&passwd, passwd_cb, "/etc/passwd", 0.);
+ev_stat_start (loop, &passwd);
+```
+- 延迟处理，就是等/etc/passwd中连续更改1s后再处理,就是说如果1s内没有修改才处理
+```c
+static ev_stat passwd;
+static ev_timer timer; 
+static void
+timer_cb (EV_P_ ev_timer *w, int revents)
+{
+	ev_timer_stop (EV_A_ w); 
+	/* now it's one second after the most recent passwd change */
+}
+static void
+stat_cb (EV_P_ ev_stat *w, int revents)
+{
+	/* reset the one-second timer */
+	ev_timer_again (EV_A_ &timer);
+}
+...
+ev_stat_init (&passwd, stat_cb, "/etc/passwd", 0.);
+ev_stat_start (loop, &passwd);
+ev_timer_init (&timer, timer_cb, 0., 1.02);
+````
+#### ev_idle
+空闲时执行的watcher, 当没有其它的事件时（不包含`ev_prepare`, `ev_check`或其它的`ev_idle`事件)，`ev_idle` wather会被触发。
+也就是说，只要进程在处理其它的wathcer事件时，它就不会被触发。但是当进程处于空闲状态时（或者只有低优先级的wather处于待处理状态）时，每个loop都会调用一次`ev_idle` watcher, 直到其停下来或者进程接收到其它更多事件。
+只要至少有一个活跃的`ev_idle` watcher，libev就永远不会要休眠。或者换句话说，它将尽可能快地循环，这将有可能会导致loop空转，从而使用cpu的使用率上升。
+
+##### ev_idle functions
+```
+void ev_idle_init (ev_idle *, callback);
+void ev_idle_start(struct ev_loop *, ev_idle *);
+void ev_idle_stop(struct ev_loop *, ev_idle *);
+```
+
+##### ev_idle example
+```c
+static void
+idle_cb (struct ev_loop *loop, ev_idle *w, int revents)
+{
+  // stop the watcher
+  ev_idle_stop (loop, w);
+ 
+  // now we can free it
+  free (w);
+ 
+  // now do something you wanted to do when the program has
+  // no longer anything immediate to do.
+}
+ 
+ev_idle *idle_watcher = malloc (sizeof (ev_idle));
+ev_idle_init (idle_watcher, idle_cb);
+ev_idle_start (loop, idle_watcher);
+```
+
+#### ev_prepare和ev_check
+`ev_prepare` watcher和`ev_check` watcher通常是成对使用的，一般在进程block之前使用`ev_perpare` watcher,block之后使用`ev_check` watcher。
+它们的主要目的是将其其它事件整合到libev中，并且提升其它事件的使用率。例如，它们可用于跟踪变量变化，实现自定义的watcher，集成各协程库等。它们偶尔也可以在将缓存数据阻塞之前刷新（例如，在X programs中可以在`ev_prepare` watcher中执行`XFlush()`）。
+
+
+
 - `ev_fork`：有限的fork事件支持
 - `ev_idle`：
 - `ev_embed`：
@@ -748,12 +985,6 @@ ev_timer_again (&mytimer);
 - `ev_cleanup`:
 - `ev_prepare` 
 - `ev_check`
-
-
-
-## example
-
-## ev_io
 
 
 
