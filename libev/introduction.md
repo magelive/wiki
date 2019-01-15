@@ -223,7 +223,7 @@ pthread_atfork (0, 0, post_fork_child);
 ev_tstamp ev_now (struct ev_loop *loop);
 void ev_now_update (struct ev_loop *loop);
 ```
-`ev_now`得到当前的 “事件循环时间(event loop time)”，它是事件循环接收事件并开始处理它们的时间。在 callback 调用期间，这个值是不变的。回调一被处理，这个时间戳就不会变了，它还是用于相对定时器的基时间。你可以把它当作事件发生（或更正确地说，libev 发生它）的时间。
+`ev_now`得到当前的 “事件循环时间(event loop time)”，它是事件循环接收事件并开始处理它们的时间。在 callback 调用期间，这个值是不变的。callback 一被处理，这个时间戳就不会变了，它还是用于相对定时器的基时间。你可以把它当作事件发生（或更正确地说，libev 发生它）的时间。
 `ev_now_updata`更新从`ev_now()`中返回的时间。不必要的话，不要使用，因为这个函数的开销相对是比较大的。它通常在`ev_run`中会自动完成更新。
 
 ### `ev_suspend`和`ev_resume`
@@ -803,14 +803,83 @@ ev_signal_init (&signal_watcher, sigint_cb, SIGINT);
 ev_signal_start (loop, &signal_watcher);
 ```
 
+#### ev_async
+异步调用watcher.`ev_async`可在不同的线程中唤醒另一个无法控制的event loop.该功能与`ev_signal`非常相似，因为信号本质上也是异步的，但是与`ev_signal` watchers不同的是，`ev_async`可以在多种event loop中使用，而不是默认的loop。
+
+##### ev_async functions
+```
+void ev_async_init(ev_async *, callback);
+void ev_async_start(struct ev_loop *, ev_async *);
+void ev_async_stop(struct ev_loop *, ev_async *);
+void ev_async_send (struct ev_loop *, ev_async *);
+int ev_async_pending (ev_async *);
+```
+`ev_async_send`给指定的`ev_async` watcher发送信号（激活），也就是说，将watcher的`EV_ASYNC`提供给loop，并立即返回。
+`ev_async_pending`判断`ev_ayync` watcher是否处于pending状态，即当`ev_async_send`已经调用，但是loop还未来得及处理时，其返回非零值。
+
+##### ev_async example
+```
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ev.h>
+
+ev_async async_watcher;
+
+static void sigint_callback(struct ev_loop *loop,ev_signal * w,int revents)
+{
+    if(revents & EV_SIGNAL)
+    {
+        printf("Call sigint_callback\n");
+        printf("ev_async_send 调用前 %d\n",ev_async_pending(&async_watcher));
+        ev_async_send(loop,&async_watcher);//这里会调用async_callback
+        printf("ev_async_send 调用后 %d\n",ev_async_pending(&async_watcher));
+    }
+}
+
+static void sigquit_callback(struct ev_loop *loop,ev_signal *w,int revetns)
+{
+    printf("Call sigquit_callback\n");
+    ev_break(loop,EVBREAK_ALL);
+}
+
+static void async_callback(struct ev_loop *loop,ev_async *w,int revents)
+{
+    if(revents & EV_ASYNC)
+    {
+        printf("Call async_callback\n");
+    }
+}
+
+int main(int argc, char **args)
+{
+    struct ev_loop *main_loop=ev_default_loop(0);
+
+    ev_init(&async_watcher,async_callback);
+    ev_async_start(main_loop,&async_watcher);
+
+    ev_signal sigint_watcher;
+    ev_init(&sigint_watcher,sigint_callback);
+    ev_signal_set(&sigint_watcher,SIGINT);
+    ev_signal_start(main_loop,&sigint_watcher);
+
+    ev_signal sigquit_watcher;//这里的ev_signal不能与上面共用,必须在声明一个变量
+    ev_init(&sigquit_watcher,sigquit_callback);
+    ev_signal_set(&sigquit_watcher,SIGQUIT);
+    ev_signal_start(main_loop,&sigquit_watcher);
+
+    ev_run(main_loop,0);
+    return 0;
+}
+```
+
 #### ev_child
 子进程状态事件watcher, 当收到`SIGCHILD`事件时，child watcher 触发(大部分情况下是子进程退出或被杀掉）。
 只有default loop才能处理信号，因此只能在default ev_loop中ev_child watcher。
 ev_child 的优先级固定是`EV_MAXPRI`。
 
-目前，即使child进程停止运行，child watcher也不会停止，需要在回调中停止child watcher。
-
-
+目前，即使child进程停止运行，child watcher也不会停止，需要在callback中停止child watcher。
 
 ##### ev_child functions
 ```
@@ -971,25 +1040,227 @@ ev_idle_start (loop, idle_watcher);
 ```
 
 #### ev_prepare和ev_check
-`ev_prepare` watcher和`ev_check` watcher通常是成对使用的，一般在进程block之前使用`ev_perpare` watcher,block之后使用`ev_check` watcher。
+`ev_prepare` watcher和`ev_check` watcher通常是成对使用的，一般在进程block之前使用`ev_perpare` watcher,block之后使用`ev_check` watcher。`ev_prepare` callback会在每次event loop之前事件调用, `ev_check` callback 会在每次event loop之后事件调用。
 它们的主要目的是将其其它事件整合到libev中，并且提升其它事件的使用率。例如，它们可用于跟踪变量变化，实现自定义的watcher，集成各协程库等。它们偶尔也可以在将缓存数据阻塞之前刷新（例如，在X programs中可以在`ev_prepare` watcher中执行`XFlush()`）。
 
-
-
-- `ev_fork`：有限的fork事件支持
-- `ev_idle`：
-- `ev_embed`：
-- `ev_prepare`：
-- `ev_check`：
-- `ev_async`:
-- `ev_cleanup`:
-- `ev_prepare` 
-- `ev_check`
-
-
-
+##### functions
+```
+void ev_prepare_init (ev_prepare *, callback);
+void ev_check_init (ev_check *, callback);
+void ev_prepare_start(struct ev_loop*, ev_prepare *);
+void ev_check_start(struct ev_loop*, ev_check *);
+void ev_prepare_stop(struct ev_loop *, ev_prepare *);
+void ev_check_stop(struct ev_loop *, ev_check *);
 ```
 
+##### example
+```c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ev.h>
+
+static void prepare_callback(struct ev_loop *loop,ev_prepare *w,int revents)
+{
+    printf("Prepare Callback\n");
+}
+
+static void check_callback(struct ev_loop *loop,ev_check *w,int revents)
+{
+    printf("Check Callback\n");
+}
+
+static void timer_callback(struct ev_loop *loop,ev_timer *w,int revents)
+{
+    printf("Timer Callback\n");
+}
+
+static void sigint_callback(struct ev_loop *loop,ev_signal *w,int revents)
+{
+    printf("Sigint Callback\n");
+    ev_break(loop,EVBREAK_ALL);
+}
+
+int main(int argc, char **args)
+{
+    struct ev_loop *main_loop=ev_default_loop(0);
+
+    ev_prepare prepare_watcher;
+    ev_check check_watcher;
+    ev_timer timer_watcher;
+    ev_signal signal_watcher;
+
+    ev_prepare_init(&prepare_watcher,prepare_callback);
+    ev_check_init(&check_watcher,check_callback);
+    ev_timer_init(&timer_watcher,timer_callback,2,0);
+    ev_signal_init(&signal_watcher,sigint_callback,SIGINT);
+
+    ev_prepare_start(main_loop,&prepare_watcher);
+    ev_check_start(main_loop,&check_watcher);
+    ev_timer_start(main_loop,&timer_watcher);
+    ev_signal_start(main_loop,&signal_watcher);
+
+    ev_run(main_loop,0);
+    return 0;
+}
+```
+
+#### ev_fork
+有限的进程监控watcher, 只有在子进程中调用了`ev_loop_fork`后才可用的watcher。
+
+
+##### functions
+```
+void ev_fork_init (ev_fork *, callback);
+void ev_fork_start( ev_loop *, ev_fork *);
+```
+##### example
+```c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ev.h>
+
+static void fork_callback(struct ev_loop *loop,ev_fork *w,int revents)
+{
+    printf("Call fork_callback\n");
+}
+
+static void timeout_callback(struct ev_loop*loop,ev_timer *w,int revents)
+{
+    printf("Time Out\n");
+    ev_break(loop,EVBREAK_ALL);
+}
+
+int main(int argc, char **args)
+{
+    struct ev_loop *main_loop=ev_default_loop(0);
+
+    ev_fork fork_watcher;
+    ev_init(&fork_watcher,fork_callback);
+    ev_fork_start(main_loop,&fork_watcher);
+
+    ev_timer timer_watcher;
+    ev_init(&timer_watcher,timeout_callback);
+    ev_timer_set(&timer_watcher,3,0);
+    ev_timer_start(main_loop,&timer_watcher);
+
+    switch(fork())
+    {
+        case -1:
+            break;
+        case 0://child
+            ev_loop_fork(main_loop);
+            break;
+    }
+
+    ev_run(main_loop,0);
+    return 0;
+}
+```
+此程序中如果把`ev_loop_fork(main_loop);`这行注释掉，那么就会有有`Call fork_callback`输出，可以说明这个`ev_fork`不是针对`fork()`函数创建的进程, 而是针对`ev_loop`调用`ev_loop_fork`创建的loop。
+
+#### ev_cleanup
+在通过调用`ev_loop_destroy`来销毁loop之前会先调用cleanup watcher来清理资源。
+`ev_clieanup` watcher不可在其它的callback中start，即不可在其它的watcher中的callback中调用`ev_cleanup_start`。
+
+##### ev_cleanup functions
+```
+void ev_cleanup_init(ev_cleanup *, callback)
+void ev_clienup_start(struct ev_loop *, ev_cleanup *);
+void ev_clienup_stop(struct ev_loop *, ev_cleanup *);
+```
+
+##### ev_cleanup examples
+```c
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ev.h>
+
+struct ev_loop *main_loop;
+
+static void program_exits(void)
+{
+    printf("Call AtExit\n");
+    ev_loop_destroy(EV_DEFAULT);//注释掉43行处代码，该函数在这里没有调用到cleanup_callback，但是却执行没有错误
+}
+
+static void cleanup_callback(struct ev_loop *loop,ev_cleanup *w,int revents)
+{
+    printf("Call cleanup_callback\n");
+}
+
+static void timer_callback(struct ev_loop *loop,ev_timer *w,int revents)
+{
+    printf("Call timer_callback\n");
+}
+
+int main(int argc, char **args)
+{
+    //struct ev_loop *main_loop=ev_default_loop(0);//error 注意ev_loop_destroy与ev_loop_new对应
+    main_loop=ev_loop_new(EVBACKEND_EPOLL);
+
+    ev_cleanup cleanup_watcher;
+    ev_init(&cleanup_watcher,cleanup_callback);
+    ev_cleanup_start(main_loop,&cleanup_watcher);
+
+    ev_timer timer_watcher;
+    ev_init(&timer_watcher,timer_callback);
+    ev_timer_set(&timer_watcher,0.2,0);
+    ev_timer_start(main_loop,&timer_watcher);
+
+    atexit(program_exits);
+
+    ev_run(main_loop,0);
+
+    ev_loop_destroy(main_loop);//在这里就可以调用到cleanup_callback
+    printf("END\n");
+    return 0;
+}
+```
+
+#### ev_embed
+`ev_embed`允许将一个event loop嵌入另一个中，但它仅支持`ev_io`事件。
+它的使用场景一般是为了解决某个错误或是优先处理I/O。解决错误这个很好解释，如在某些条件下，只想用kqueue来处理，但是kqueue并不能通用的backend, 所以可以创建一个kqueue loop和一个通用的poll loop，再把kqueue loop嵌入到poll loop中，虽然说这样处理起来会比较慢，但至少还是能让其工作的。另一个就是优先处理某些I/O，在极少数情况下，遇到一些必须快速观察和处理一些fds（低延迟）的情况，甚至优先级和空闲观察者可能会有太多的开销。在这种情况下，您将所有高优先级的fds放在一个loop中，所有其余的放另一个Loop中，并将第二个嵌入第一个loop中。
+如何`ev_embed`watcher处于active状态，那么如果每次`ev_embed` loop中可能有pending状态的事件时，都会调用其callback，所以callback必须调用`ev_embed_sweep（mainloop，watcher）`进行单次扫描并调用watcher的callback，如果不想调用`ev_embed_sweep`也可以启动一个idle wather来降低embed loop的优先级。也可以不设置callback(即其设置为0）。另外在使用此功能时，需要为`ev_embed` loop设置一个单独的变量，如果创建失败，则使用普通循环，原因在于通常只有`ev_embeddable_backends`后端支持它。
+
+##### ev_embed functios
+```
+void ev_embed_init (ev_embed *, callback, struct ev_loop *embedded_loop);
+void ev_embed_set (ev_embed *, struct ev_loop *embedded_loop);
+void ev_embed_start(struct ev_loop *, ev_embed *);
+void ev_embed_stop(struct ev_loop *, ev_embed *);
+ev_embed_sweep (loop, ev_embed *);
+```
+`ev_embed_sweep`在`ev_embed` loop上进行单次无阻塞扫描。这类似于`ev_run（embedded_loop，EVRUN_NOWAIT）`，但是以最合适的方式用于嵌入式循环。`
+
+##### ev_embed example
+创建一个`ev_embed loop`到default loop中。如何创建失败，则使用default loop。
+```c
+struct ev_loop *loop_hi = ev_default_init (0);
+struct ev_loop *loop_lo = 0;
+ev_embed embed;
+ 
+// see if there is a chance of getting one that works
+// (remember that a flags value of 0 means autodetection)
+loop_lo = ev_embeddable_backends () & ev_recommended_backends ()
+  ? ev_loop_new (ev_embeddable_backends () & ev_recommended_backends ())
+  : 0;
+ 
+// if we got one, then embed it, otherwise default to loop_hi
+if (loop_lo)
+  {
+    ev_embed_init (&embed, 0, loop_lo);
+    ev_embed_start (loop_hi, &embed);
+  }
+else
+  loop_lo = loop_hi;
+```
+	
 ## 参考
 [libev](https://metacpan.org/pod/distribution/EV/libev/ev.pod#NAME)
 [libev 介绍](https://www.jianshu.com/p/2c78f7ec7c7f)
@@ -1001,4 +1272,5 @@ ev_idle_start (loop, idle_watcher);
 [Libev库学习（详细）](https://blog.csdn.net/guankeliang/article/details/82911856)
 [c10K problem](http://www.kegel.com/c10k.html)
 [libev 事件库](https://jin-yang.github.io/post/linux-libev.html)
+[Socket网络编程--Libev库学习 3](https://www.cnblogs.com/wunaozai/p/3955156.html)
 libev source ev.3
