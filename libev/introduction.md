@@ -17,13 +17,13 @@ Libev 支持文件描述符事件的 select，poll，Linux 特有的 epoll，BSD
 
 Libev 使用一个`ev_tstamp`数据类型来表示1970年以来的秒数，实际类型是 C 里面的double类型。
 
-### ev_sleep
+### ev\_sleep
 `void ev_sleep (ev_tstamp interval)`
 休眠给定的时间：当前线程将阻塞，直到它被中断或经过了给定的时间间隔（大约 - 即使不中断，它可能也会早返回一点）。
 如果 interval <= 0 就立即返回。基本上这是一个粒度比秒更高的 sleep()。
 interval 的范围是有限的 - libev 只保证最长一天 (interval <= 86400) 的休眠时间是可以工作的。
 
-### ev_version_major和ev_version_minor
+### ev\_version\_major和ev\_version\_minor
 ```
 int ev_version_major ()
 int ev_version_minor ()
@@ -53,7 +53,7 @@ assert (("sorry, no epoll, no sex",
 
 `ev_embeddable_backends`返回其它事件循环中可嵌入的后端的集合。这个值是平台特有的，但可以包含当前系统不可用的后端。为了找出当前系统可能支持的可嵌入后端，你需要查看 `ev_embeddable_backends () & ev_supported_backends ()`，同样的建议采用的那些。参考 `ev_embed` watcher的描述来获得更多信息。
 
-### ev_set_allocator
+### ev\_set\_allocator
 `ev_set_allocator (void (cb)(void *ptr, long size) throw ())`
 重新设置realloc函数。对于一些系统（至少包括 BSD 和 Darwin）的 realloc 函数可能不正确，libev 已经给了替代方案。
 你可以在高可用性程序中覆盖这个函数，比如，如果它无法分配内存就释放一些内存，使用一个特殊的分配器，或者甚至是休眠一会儿并重试直到有内存可用。
@@ -73,7 +73,7 @@ static void *persistent_realloc (void *ptr, size_t size)
 ev_set_allocator (persistent_realloc);
 ```
 
-### ev_set_syserr_cb
+### ev\_set\_syserr\_cb
 `ev_set_syserr_cb (void (*cb)(const char *msg) throw ())`
 设置系统错误的callback。默认调用`perror()`并`abort()`。
 设置在一个可重试系统调用错误（比如 `select`，`poll`，`epoll_wait` 失败）发生时调用的回调函数。消息是一个可打印的字符串，表示导致问题产生的系统调用或子系统。如果设置了这个回调，则 libev 将期待它补救这种状况，无论何时何地它返回。即 libev 通常将重试请求的操作，或者如果条件没有消失，执行 bad stuff（比如终止程序）。
@@ -93,7 +93,7 @@ fatal_error (const char *msg)
 ev_set_syserr_cb (fatal_error);
 ```
 
-### ev_feed_signal
+### ev\_feed\_signal
 `ev_feed_signal(int signum)`
 这个函数可被用于 “模拟” 一个信号接收。在任何时候，任何上下文，包括信号处理器或随机线程，调用这个函数都是完全安全的。
 它的主要用途是在你的进程中定制信号处理。比如，你可以默认在所有线程中阻塞信号（当创建任何 loops 时指定 `EVFLAG_NOSIGMASK`），然后在一个线程中，使用 `sigwait` 或其它的机制来等待信号，然后通过调用 `ev_feed_signal` 将它们“传送” 给 libev。
@@ -102,7 +102,7 @@ ev_set_syserr_cb (fatal_error);
 Event loop 用一个结构体`struct ev_loop *`描述。
 Libev 支持两类 loop，一是 default loop，支持子进程事件（child process event）；而动态创建的 event loops 就不支持这个功能。
 
-### ev_default_loop和ev_loop_new
+### ev\_default\_loop和ev\_loop\_new
 函数原型：
 ```
 struct ev_loop *ev_default_loop (unsigned int flags);
@@ -176,13 +176,13 @@ flags支持如下值：
 如果标记值中有一个或多个后端标记，则只会尝试这些后端（以这里列出的相反的顺序）。
 如果没有指定，则会尝试 `ev_recommended_backends()` 中的所有后端。
 
-### `ev_loop_destory`
+### ev\_loop\_destory
 函数原型：`void ev_loop_destroy (loop);`
 销毁一个`ev_loop`事件循环对象（释放所有的内存和内核状态等等）。注意这里要将所有的 IO 清除光之后再调用，因为这个函数并不中止所有活跃（active）的 IO。部分 IO 不会被清除，比如 signal。这些需要手动清除。注意某些全局状态，比如信号状态（及安装的信号处理程序），将不会被这个函数释放，及相关的watcher（比如信号和 child watcher）将需要手动地停止。
 这个函数一般和`ev_loop_new`一同使用。当然它也可以用于`ev_default_loop`返回的默认的 loop，只是在这种情况下不是线程安全的。
 注意不建议对默认的 loop 调用这个函数，除了在极少的你真的需要释放它的资源的情况下。
 
-### `ev_loop_fork`
+### ev\_loop\_fork
 函数原型：`void ev_loop_fork (struct ev_loop *loop);`
 这个函数导致`ev_run`的子过程重设已有的 backend 的 kernel state。
 重用父进程创建的 loop。可以和`pthread_atfork()`配合使用。
@@ -200,24 +200,24 @@ post_fork_child (void)
 pthread_atfork (0, 0, post_fork_child);
 ```
 
-### `ev_is_default_loop`
+### ev\_is\_default\_loop
 函数原型：`int ev_is_default_loop (struct ev_loop *loop);`
 判断当前 loop 是不是 default loop。
 
-### `ev_iteration`
+### ev\_iteration
 函数原型：`unsigned int ev_iteration (struct ev_loop * loop);`
 返回当前的 loop 的迭代数。等于 libev pool 新事件的数量（?）。这个值对应ev_prepare和ev_check调用，并在 prepare 和 check 之间增一。
 
-### `ev_depth`
+### ev\_depth
 函数原型：`unsigned int ev_depth (struct ev_loop *loop);`
 返回ev_run()进入减去退出次数的差值。
 注意，导致ev_run异常退出的调用（setjmp / longjmp, pthread_cancel, 抛出异常等）均不会导致该值减一。
 
-### `ev_backend`
+### ev\_backend
 函数原型：`unsigned int ev_backend (struct ev_loop *loop);`
 返回 `EVBACKEND_*` 标记中的一个，以指明使用的事件后端。
 
-### `ev_now`和`ev_noew_updata`
+### ev\_now和ev\_noew\_updata
 函数原型：
 ```
 ev_tstamp ev_now (struct ev_loop *loop);
@@ -226,7 +226,7 @@ void ev_now_update (struct ev_loop *loop);
 `ev_now`得到当前的 “事件循环时间(event loop time)”，它是事件循环接收事件并开始处理它们的时间。在 callback 调用期间，这个值是不变的。callback 一被处理，这个时间戳就不会变了，它还是用于相对定时器的基时间。你可以把它当作事件发生（或更正确地说，libev 发生它）的时间。
 `ev_now_updata`更新从`ev_now()`中返回的时间。不必要的话，不要使用，因为这个函数的开销相对是比较大的。它通常在`ev_run`中会自动完成更新。
 
-### `ev_suspend`和`ev_resume`
+### ev\_suspend和ev\_resume
 函数原型：
 ```
 void ev_suspend (struct ev_loop *loop);
@@ -238,7 +238,7 @@ void ev_resume (struct ev_loop *loop);
 
 典型的使用场景是交互式的程序，比如游戏：当用户按下 `^Z` 挂起游戏，并在一小时后恢复，对于超时最好的处理是在程序挂起期间就像时间没有流逝一样。这可以通过在你的 `SIGTSTP` 处理程序中调用 `ev_suspend`，给你自己发送一个 `SIGSTOP` 并在之后直接调用 `ev_resume` 恢复定时器处理来实现。
 
-### `ev_run`
+### ev\_run
 函数原型：`bool ev_run (struct ev_loop *loop, int flags);`
 初始化 loop 结束后，调用这个函数开始 loop。如果 flags == 0，直至 loop 没有活跃的时间或者是调用了 `ev_break` 之后停止。
 Loop 可以是异常使能的，你可以在 callback 中调用`longjmp`来终端回调并且跳出 `ev_run`，或者通过抛出 C++ 异常。这些不会导致 `ev_depth` 值减少。
@@ -278,14 +278,14 @@ FINISH：
 - loop depth --
 - return
 
-### `ev_break`
+### ev\_break
 函数原型：`void ev_break (struct ev_loop *loop, int how);`
 中断 loop。参数可以是 `EVBREAK_ONE`（执行完一个内部调用后返回）或`EVBREAK_ALL`（执行完所有）。
 可被用于执行一个调用使`ev_run` 提前返回（但是只有在其处理完了所有outstanding 事件之后）。其中的 `how` 参数必须是 `EVBREAK_ONE`，它使最内层的 `ev_run` 返回，或者是 `EVBREAK_ALL`，它使所有嵌套的 `ev_run` 返回。
 这个 "break 状态" 将在下次调用 `ev_run` 时被清除。
 在任何 `ev_run` 调用之外调用 `ev_break` 也是安全的，只是在那种情况下不起作用。
 
-### `ev_ref`和`ev_unref`
+### ev\_ref和ev\_unref
 函数原型：
 ```
 void ev_ref (struct ev_loop *loop);
@@ -295,7 +295,7 @@ Ref/unref 可以被用于添加或移除一个事件循环的引用计数。
 每个watcher持有一个引用计数，只要引用计数不为零，ev_run 就不会返回。
 在做 start 之后要 unref；stop 之前要 ref。
 
-### `ev_set_io_collect_interval`和`ev_set_timeout_collect_interval`
+### ev\_set\_io\_collect\_interval和ev\_set\_timeout\_collect\_interval
 函数原型：
 ```
 void ev_set_io_collect_interval (struct ev_loop *loop, ev_tstamp interval);
@@ -305,7 +305,7 @@ void ev_set_timeout_collect_interval (struct ev_loop *loop, ev_tstamp interval);
 但这是理想的情况，实际上，比如 select 这样低效的系统调用，由于可以一次性读取很多，所以可以适当地进行延时。
 通过使用比较高的延迟，但是增加每次处理的数据量，以提高 CPU 效率。
 
-### `ev_pending_count`、`ev_invoke_pending`和`ev_set_invoke_pending_cb`
+### ev\_pending\_count、ev\_invoke\_pending和ev\_set\_invoke\_pending\_cb
 函数原型：
 ```
 int ev_pending_count (struct ev_loop *loop);
@@ -317,7 +317,7 @@ void ev_set_invoke_pending_cb (struct ev_loop *loop, void (*invoke_pending_cb(EV
 `ev_set_invoke_pending_cb`将覆盖loop中的调用挂起功能：在调用所有pending watchers时，`ev_run`将改用此回调函数来回调处理。例如，当您想在另一个上下文（另一个线程等）中调用实际的watchers时，这是很有用的。
 如果要重置回调，使用`ev_invoke_pending`作为新callback。
 
-### `ev_set_loop_release_cb`
+### ev\_set\_loop_release\_cb
 函数原型：
 ```
 void ev_set_loop_release_cb (struct ev_loop *loop,
@@ -327,7 +327,7 @@ void ev_set_loop_release_cb (struct ev_loop *loop,
 
 这是一个 lock 操作，你可以自定义 lock。其中 release 是 unlock，acquire 是 lock。release 是在 loop 挂起以等待events 之前调用，并且在开始回调之前调用 acquire。
 
-### `ev_set_userdata`和`ev_userdata`
+### ev\_set\_userdata和ev\_userdata
 函数原型：
 ```
 void ev_set_userdata (struct ev_loop *loop, void *data);
@@ -335,9 +335,42 @@ void *ev_userdata (struct ev_loop *loop);
 ```
 设置/读取 loop 中的用户 data。
 
-### `ev_verify`
+### ev\_verify
 函数原型：`void ev_verify (struct ev_loop *loop);`
 验证当前 loop 的设置。如果发现问题，则打印 error msg 并 abort()。
+
+### ev\_once
+函数原型:
+```
+void ev_once (loop, int fd, int events, ev_tstamp timeout, callback, arg);
+```
+从指定的fd中指定一个超时事件，这个函数的方便之处在于无需做 alloc/conf/start/stop/free。fd可以小于0，这样就没有 I/O 监控，并且“events”会被忽略。
+此功能结合了一个简单的timer watcher和一个I/O watcher，可以在任何事件发生时调用您的回调，并自动停止它们。
+例如：10以内接入stdin的输入，否则超时处理
+```c
+static void stdin_ready (int revents, void *arg)
+{
+  if (revents & EV_READ)
+    /* stdin might have data for us, joy! */;
+  else if (revents & EV_TIMER)
+    /* doh, nothing entered */;
+}
+ 
+ev_once (STDIN_FILENO, EV_READ, 10., stdin_ready, 0);
+```
+
+### ev\_feed\_fd\_event
+```
+void ev_feed_fd_event (loop, int fd, int revents)
+```
+给指定的fd提供事件。
+
+### ev\_feed\_signal\_event
+```
+void ev_feed_signal_event (loop, int signum)
+```
+给指定的loop发送信号,它是异步安全的。如同`ev_feed_signal`。
+
 
 ## watcher
 
@@ -818,7 +851,7 @@ int ev_async_pending (ev_async *);
 `ev_async_pending`判断`ev_ayync` watcher是否处于pending状态，即当`ev_async_send`已经调用，但是loop还未来得及处理时，其返回非零值。
 
 ##### ev_async example
-```
+```c
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -1260,7 +1293,20 @@ if (loop_lo)
 else
   loop_lo = loop_hi;
 ```
-	
+## MACRO
+```c
+struct ev_loop;
+# define EV_P  struct ev_loop *loop               /* a loop as sole parameter in a declaration */
+# define EV_P_ EV_P,                              /* a loop as first of multiple parameters */
+# define EV_A  loop                               /* a loop as sole argument to a function call */
+# define EV_A_ EV_A,                              /* a loop as first of multiple arguments */
+# define EV_DEFAULT_UC  ev_default_loop_uc_ ()    /* the default loop, if initialised, as sole arg */
+# define EV_DEFAULT_UC_ EV_DEFAULT_UC,            /* the default loop as first of multiple arguments */
+# define EV_DEFAULT  ev_default_loop (0)          /* the default loop as sole arg */
+# define EV_DEFAULT_ EV_DEFAULT,                  /* the default loop as first of multiple arguments */
+```
+
+
 ## 参考
 [libev](https://metacpan.org/pod/distribution/EV/libev/ev.pod#NAME)
 [libev 介绍](https://www.jianshu.com/p/2c78f7ec7c7f)

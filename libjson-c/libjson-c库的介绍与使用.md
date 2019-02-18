@@ -1,38 +1,34 @@
 <!--
 author: Magelive
-date: 2017-02-10
-title: libjson-c库的介绍与使用
-tags: 
-category: libjsonC
+date: 2016-12-12 22:30:00
+title: json-c库的介绍与使用
+tags: Linux, json, json-c
+category: json
 status: publish
-summary: 
-head: 
-images: 
+summary:json-c库是为了方便在C语言中使用与解析json数据格式。json对象中的几种常见的数据格式与C语言中的觉格式相对应，如：int、char、double等。同时json中还有自己的数据格式，在使用时需要转换成Json自己的类型 
 -->
 
-## json-c库的介绍与使用
-### json-c库介绍
-json-c库是为了方便在C语言中使用与解析json数据格式。json对象中的几种常见的数据格式与C语言中的觉格式相对应，如：int、char、double等。同时json中还有自己的数据格式，在使用时需要转换成Json自己的类型
-### json-c库安装
-#### 下载
+json-c库是为了方便在C语言中使用与解析json数据格式。json对象中的几种常见的数据格式与C语言中的觉格式相对应，如：int、char、double等。同时json中还有自己的数据格式，在使用时需要转换成Json自己的类型.
+##json-c库安装
+###下载
 ```
 git clone git@github.com:json-c/json-c.git
 ```
-#### 编译与安装
-##### 本地编译与安装
+###编译与安装
+####本地编译与安装
 ```
 ./configure
 make
 ```
-##### 交叉编译与安装
+####交叉编译与安装
 ```
 ./configure CC= arm-linux-gcc –host=arm-linux –build=i686-pc-linux
 make
 ```
 
-### json-c使用
-#### 库函数说明
-##### Json对象类型
+##json-c使用
+###库函数说明
+####Json对象类型
 * json_type_null: null数据
 * json_type_int	: int类型数据
 * json_type_double : double类型数据
@@ -41,7 +37,7 @@ make
 * json_type_object : key/value对集数据
 * json_type_array :	数组型数据
 
-##### Json对象常用操作函数
+####Json对象常用操作函数
 ```js
 	//创建object
 	struct json_object* json_object_new_boolen(json_bool b);
@@ -136,7 +132,7 @@ make
 ```
 	int json_object_put(struct json_object *jso);
 ```
-#### 范例
+###范例
 以下范例是从一段Json字符串的数据中获取值
 ```c
 int json_get_value(const char *json, char *key, char **value, enum json_type *type){
@@ -188,7 +184,7 @@ int json_get_value(const char *json, char *key, char **value, enum json_type *ty
 ```
 
 
-### 参考
+##参考
 >[libjson wiki](https://github.com/json-c/json-c/wiki)
 >[JSON C库的使用](http://blog.csdn.net/cuishumao/article/details/10197941)
 >[JSON_C语言开发指南](http://wenku.baidu.com/link?url=JH5oZJ6wYr7BYEDiPznzIWPksOliUFG4ub29Lmc2Zw4_mBpv2zVM5ydJ7a5x1qJ9-UxcEdUOEt32yYvVT8KnXmhJrfdAxiOIrUYr5D7VUzK)
