@@ -44,6 +44,8 @@ images:
 - rtp/rtsp/rtmp
 - live555
 - ffmpeg
+- webrtc
+- ONVIF
 
 ### 大数据、云计算及分布式存储方向
 - openstack
@@ -99,7 +101,7 @@ images:
 - PCL
 - ROS
 - protobuf-c
-
+- stb_truetype 字体栅格化开源库
 
 #### Linux系统方向
 此方向的主要目标则是熟悉linux运行原理，更好的理解系统框架
