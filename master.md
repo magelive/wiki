@@ -16,54 +16,104 @@ images:
 **以下所有技能树学习不分前后，现在 只将其要点罗列一二，后贯可随时补充与修改**
 ## 技能树分类
 ### 语言分类方向
-- c/c++
-- java
-- python
-- Go
-- php
-- javascript
-- shell
-- object c/swift
-- lua
-- html5/css
-- Ruby
-
+```plantuml
+@startmindmap
++ language
+++ c/c++
+++ java
+++ python
+++ Go
+++ php
+++ javascript
+++ shell
+++ object c/swift
+++ lua
+++ html5/css
+++ Ruby
+++ julai
+++ ruby
+@endmindmap
+```
 ### 系统平台方向
-- linux
-- Android
-- IOS/MAC
+```plantuml
+@startmindmap
++ OS
+++ linux
+++ Android
+++ IOS/MAC
+++ freertos
+++ liteos
+++ hamonyos
+++ thread-OS
+@endmindmap
+```
 
 ### 图形及图形图像处理方向
-- Qt
-- SDL
-- libvlc
-- Gtk
-- opencv
-- opengl
-- jpeg/yuv/h264
-- rtp/rtsp/rtmp
-- live555
-- ffmpeg
-- webrtc
-- ONVIF
+```plantuml
+@startmindmap
++ media
+++ graphic
++++ QT
++++ SDL
++++ libvlc
++++ Gtk
+++ image compressed format
++++ jpeg
++++ yuv
++++ h264
++++ h265
++++ av1
+++ transfer protoco
++++ rtp
++++ sdp
++++ rtsp
++++ rtmp
++++ ONVIF
++++ GB28181
+++ media libs
++++ opencv
++++ opengl
++++ live555
++++ ffmpeg
++++ webrtc
+@endmindmap
+```
 
 ### 大数据、云计算及分布式存储方向
-- openstack
-- hodoop
-- MapReduce
+```plantuml
+@startmindmap
++ cloud
+++ openstack
+++ hodoop
+++ MapReduce
+@endmindmap
+```
+
 
 ### 数据库方向
-- 数据库原理
-- mysql
-- postgresql
-- redis
-- memcache
+```plantuml
+@startmindmap
++ database
+++ 数据库原理
+++ mysql
+++ postgresql
+++ redis
+++ memcache
+@endmindmap
+```
+
 
 ### 虚拟化方向
-- docker技术
-- kvm/qemu
-- java虚拟机
-- linux虚拟机技术CGroup及NameSpace
+```plantuml
+@startmindmap
++ virtualization
+++ docker技术
+++ kvm/qemu
+++ java虚拟机
+++ linux虚拟机技术CGroup及NameSpace
+@endmindmap
+```
+
 ### 前端技术方向
 - node.js
 
