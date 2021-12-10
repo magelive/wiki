@@ -1,4 +1,5 @@
 ## libev简介
+
 一个 C 编写的功能全面的高性能事件循环库。
 libev是一个event loop：事件驱动的库。通过向libev注册感兴趣的events，比如socket可读事件，libev会对所注册的事件的源进行管理，并在事件发生时触发相应的回调函数。
 
@@ -8,9 +9,11 @@ libev是一个event loop：事件驱动的库。通过向libev注册感兴趣的
 Libev 支持文件描述符事件的 select，poll，Linux 特有的 epoll，BSD 特有的 kqueue 以及 Solaris 特有的事件端口机制 (`ev_io`)，Linux 的 inotify 接口 (`ev_stat`)，Linux eventfd/signalfd（用于更快更干净的线程间唤醒 (`ev_async`)/信号处理 (`ev_signal`)），相对定时器 (`ev_timer`)，定制重新调度逻辑的绝对定时器 (`ev_periodic`)，同步的信号 (`ev_signal`)，进程状态变化事件 (`ev_child`)，以及处理事件循环机制自身的事件watcher (`ev_idle`，`ev_embed`，`ev_prepare` 和 `ev_check` watcher) 和文件watcher (`ev_stat`)，甚至是对 fork 事件的有限支持 (`ev_fork`)。
 
 ## glob functions
+
 这些函数可以随时调用，甚至在以任何方式初始化库之前。
 
 ### ev_time
+
 `ev_tstamp ev_time ()`
 返回以 libev 所使用的格式的当前时间。注意 `ev_now`函数通常更快，且也常常返回你实际想知道的时间戳。
 `ev_now_update` 和 `ev_now` 的结合也很有意思。

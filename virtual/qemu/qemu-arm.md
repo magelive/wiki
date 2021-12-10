@@ -51,3 +51,8 @@ qemu-system-arm -M ?
 ```shell
 qemu-system-arm -cpu ?
 ```
+
+## 参考
+[从0开始使用QEMU模拟ARM开发环境之uboot通过sd卡加载uImage](https://blog.csdn.net/leacock1991/article/details/113704439?utm_medium=distribute.pc_feed_404.none-task-blog-2~default~OPENSEARCH~default-4.control404&depth_1-utm_source=distribute.pc_feed_404.none-task-blog-2~default~OPENSEARCH~default-4.control40)
+[qemu-arm](https://blog.csdn.net/tycoon1988/category_5592855.html)
+[使用QEMU模拟搭建ARM开发平台（三）——添加SCSI和MTD以及NAND flash支持](https://blog.csdn.net/tycoon1988/article/details/46532283?utm_medium=distribute.pc_feed_404.none-task-blog-2~default~OPENSEARCH~default-1.control404&depth_1-utm_source=distribute.pc_feed_404.none-task-blog-2~default~OPENSEARCH~default-1.control40)

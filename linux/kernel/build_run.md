@@ -1,8 +1,10 @@
-# kernel build and qemu run
+# kernel
 
 ## build
 
 ### toolchain
+
+
 
 ### build
 

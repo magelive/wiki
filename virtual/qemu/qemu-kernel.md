@@ -12,7 +12,7 @@ git clone git@github.com:torvalds/linux.git
 
 ```shell
 #!/bin/bash
-export PATH=$PATH:$/toolchain/gcc-arm-none-eabi-9-2019-q4-major/bin
+export PATH=$PATH:${toolchain}/gcc-arm-none-eabi-9-2019-q4-major/bin
 ```
 
 ### env
