@@ -48,3 +48,26 @@ markdown_py --noisy -x plantuml_markdown test1.md -f test1.html
 
 [plantuml cmdline](https://plantuml.com/zh/command-line)
 [plantuml-markdown](https://www.cnpython.com/pypi/plantuml-markdown)
+
+
+
+```plantuml
+a->b
+b->c
+c->d
+```
+
+```puml
+a->b
+b->c
+c->d
+```
+
+
+```uml
+a->d
+```
+
+```{uml}
+c->d
+```
