@@ -177,3 +177,4 @@ hmac_md5(
 
 [消息认证码是怎么一回事？](https://halfrost.com/message_authentication_code/)
 [RFC 2104](http://www.ietf.org/rfc/rfc2104.txt)
+[HMAC与CMAC](https://blog.csdn.net/lianyunyouyou/article/details/118557410)
