@@ -173,6 +173,15 @@ hmac_md5(
 
 ```
 
+## GMAC
+
+GMAC ( Galois message authentication code mode, 伽罗瓦消息验证码 )
+
+GMAC就是利用伽罗华域(Galois Field，GF，有限域)乘法运算来计算消息的MAC值。假设秘钥长度为128bits, 当密文大于128bits时，需要将密文按128bits进行分组。应用流程如下图：
+
+ ![avatar](images/mac_gmac.png)
+
+
 ## 参考
 
 [消息认证码是怎么一回事？](https://halfrost.com/message_authentication_code/)
